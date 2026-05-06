@@ -6,29 +6,30 @@ let package = Package(
     name: "MyToolkit",
     
     platforms: [
-        .iOS(.v15),
-        .macOS(.v12)
+        .iOS(.v16),
+        .macOS(.v13)
     ],
     
     products: [
         // MARK: - Core
-        .library(name: "ToolkitCore", targets: ["ToolkitCore"]),
-        .library(name: "ToolkitUtility", targets: ["ToolkitUtility"]),
-        .library(name: "ToolkitCrypto", targets: ["ToolkitCrypto"]),
+        .library(name: "ToolkitCore",        targets: ["ToolkitCore"]),
+        .library(name: "ToolkitUtility",     targets: ["ToolkitUtility"]),
+        .library(name: "ToolkitCrypto",      targets: ["ToolkitCrypto"]),
         .library(name: "ToolkitCompression", targets: ["ToolkitCompression"]),
+        .library(name: "ToolkitFormatter",   targets: ["ToolkitFormatter"]),
         
         // MARK: - Service
-        .library(name: "ToolkitNetworking", targets: ["ToolkitNetworking"]),
-        .library(name: "ToolkitAuth", targets: ["ToolkitAuth"]),
+        .library(name: "ToolkitNetworking",  targets: ["ToolkitNetworking"]),
+        .library(name: "ToolkitAuth",        targets: ["ToolkitAuth"]),
         
         // MARK: - Feature
-        .library(name: "ToolkitUI", targets: ["ToolkitUI"]),
+        .library(name: "ToolkitUI",          targets: ["ToolkitUI"]),
         
         // MARK: - Plugin
-        .library(name: "ToolkitPlugins", targets: ["ToolkitPlugins"]),
+        .library(name: "ToolkitPlugins",     targets: ["ToolkitPlugins"]),
         
-        // MARK: - Umbrella (Optional)
-        .library(name: "ToolkitAll", targets: ["ToolkitAll"])
+        // MARK: - Umbrella
+        .library(name: "ToolkitAll",         targets: ["ToolkitAll"])
     ],
     
     dependencies: [
@@ -50,6 +51,10 @@ let package = Package(
         ),
         .target(
             name: "ToolkitCompression",
+            dependencies: ["ToolkitCore"]
+        ),
+        .target(
+            name: "ToolkitFormatter",
             dependencies: ["ToolkitCore"]
         ),
         
@@ -74,6 +79,7 @@ let package = Package(
         .target(
             name: "ToolkitUI",
             dependencies: [
+                "ToolkitCore",
                 "ToolkitAuth",
                 "ToolkitNetworking"
             ]
@@ -82,9 +88,7 @@ let package = Package(
         // MARK: - Plugin Layer
         .target(
             name: "ToolkitPlugins",
-            dependencies: [
-                "ToolkitCore"
-            ]
+            dependencies: ["ToolkitCore"]
         ),
         
         // MARK: - Umbrella Target
@@ -95,6 +99,7 @@ let package = Package(
                 "ToolkitUtility",
                 "ToolkitCrypto",
                 "ToolkitCompression",
+                "ToolkitFormatter",
                 "ToolkitNetworking",
                 "ToolkitAuth",
                 "ToolkitUI",
@@ -103,43 +108,16 @@ let package = Package(
         ),
         
         // MARK: - Tests
-        
-        .testTarget(
-            name: "ToolkitCoreTests",
-            dependencies: ["ToolkitCore"]
-        ),
-        .testTarget(
-            name: "ToolkitUtilityTests",
-            dependencies: ["ToolkitUtility"]
-        ),
-        .testTarget(
-            name: "ToolkitCryptoTests",
-            dependencies: ["ToolkitCrypto"]
-        ),
-        .testTarget(
-            name: "ToolkitCompressionTests",
-            dependencies: ["ToolkitCompression"]
-        ),
-        .testTarget(
-            name: "ToolkitNetworkingTests",
-            dependencies: ["ToolkitNetworking"]
-        ),
-        .testTarget(
-            name: "ToolkitAuthTests",
-            dependencies: ["ToolkitAuth"]
-        ),
-        .testTarget(
-            name: "ToolkitUITests",
-            dependencies: ["ToolkitUI"]
-        ),
-        .testTarget(
-            name: "ToolkitPluginsTests",
-            dependencies: ["ToolkitPlugins"]
-        ),
-        .testTarget(
-            name: "ToolkitAllTests",
-            dependencies: ["ToolkitAll"]
-        )
+        .testTarget(name: "ToolkitCoreTests",        dependencies: ["ToolkitCore"]),
+        .testTarget(name: "ToolkitUtilityTests",     dependencies: ["ToolkitUtility"]),
+        .testTarget(name: "ToolkitCryptoTests",      dependencies: ["ToolkitCrypto"]),
+        .testTarget(name: "ToolkitCompressionTests", dependencies: ["ToolkitCompression"]),
+        .testTarget(name: "ToolkitFormatterTests",   dependencies: ["ToolkitFormatter"]),
+        .testTarget(name: "ToolkitNetworkingTests",  dependencies: ["ToolkitNetworking"]),
+        .testTarget(name: "ToolkitAuthTests",        dependencies: ["ToolkitAuth"]),
+        .testTarget(name: "ToolkitUITests",          dependencies: ["ToolkitUI"]),
+        .testTarget(name: "ToolkitPluginsTests",     dependencies: ["ToolkitPlugins"]),
+        .testTarget(name: "ToolkitAllTests",         dependencies: ["ToolkitAll"])
     ],
     
     swiftLanguageModes: [.v6]
