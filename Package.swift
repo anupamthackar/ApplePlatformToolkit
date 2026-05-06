@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "MyToolkit",
+    name: "ApplePlatformToolkit",
     
     platforms: [
         .iOS(.v16),

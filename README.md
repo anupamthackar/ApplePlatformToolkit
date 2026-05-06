@@ -1,185 +1,230 @@
-# Apple Platform Toolkit
+# Apple Platform Toolkit 🍎
 
-A highly modular, extensible, and configuration-driven enterprise SDK for Apple platforms. This toolkit is divided into focused modules to ensure strict separation of concerns while offering deep customization via Builders, Strategy patterns, and Injectable Managers.
+[![Swift 6.3](https://img.shields.io/badge/Swift-6.3-orange.svg?style=flat)](https://swift.org)
+[![Platform](https://img.shields.io/badge/Platforms-iOS%20|%20macOS-blue.svg?style=flat)](https://developer.apple.com/ios/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat)](LICENSE)
 
-## Table of Contents
-1. [Installation](#installation)
-2. [Module Overview](#module-overview)
-3. [Usage by Module](#usage-by-module)
-   - [ToolkitCore & ToolkitPlugins](#toolkitcore--toolkitplugins)
-   - [ToolkitUtility](#toolkitutility)
-   - [ToolkitCrypto](#toolkitcrypto)
-   - [ToolkitNetworking](#toolkitnetworking)
-   - [ToolkitAuth](#toolkitauth)
-   - [ToolkitCompression](#toolkitcompression)
+A high-performance, modular, and enterprise-grade SDK for modern Apple platform development. Built with **Swift 6** concurrency at its core, this toolkit provides a unified, pluggable architecture for Authentication, Networking, Cryptography, and more.
 
 ---
 
-## Installation
+## 🏗 Architecture Overview
 
-You can integrate individual modules or the entire toolkit via **Swift Package Manager**.
+The Apple Platform Toolkit follows a strict **4-layer architecture** to ensure maximum decoupling, testability, and scalability.
+
+```mermaid
+graph TD
+    subgraph FeatureLayer ["Feature Layer (UI & Workflows)"]
+        ToolkitUI
+    end
+
+    subgraph ServiceLayer ["Service Layer (Business Logic)"]
+        ToolkitAuth --> ToolkitNetworking
+        ToolkitAuth --> ToolkitCrypto
+        ToolkitNetworking --> ToolkitCore
+    end
+
+    subgraph CoreLayer ["Core Layer (Infrastructure)"]
+        ToolkitUtility --> ToolkitCore
+        ToolkitCrypto --> ToolkitCore
+        ToolkitCompression --> ToolkitCore
+        ToolkitFormatter --> ToolkitCore
+    end
+
+    subgraph PluginLayer ["Plugin Layer (Extensibility)"]
+        ToolkitPlugins --> ToolkitCore
+    end
+
+    ToolkitAll --> FeatureLayer
+    ToolkitAll --> ServiceLayer
+    ToolkitAll --> CoreLayer
+    ToolkitAll --> PluginLayer
+```
+
+- **Core Layer**: Foundation utilities (Logging, DI, Task Management).
+- **Service Layer**: High-level business logic (Networking, Auth).
+- **Feature Layer**: Reusable UI components.
+- **Plugin Layer**: Cross-cutting concerns (Analytics, Observability).
+
+---
+
+## 📦 Installation
+
+Integrate the toolkit via **Swift Package Manager**. You can import the entire suite or individual modules to keep your binary size small.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/your-repo/MyToolkit.git", from: "1.0.0")
+    .package(url: "https://github.com/anupamthackar/ApplePlatformToolkit.git", from: "1.0.0")
 ]
 
-targets: [
-    .target(name: "YourApp", dependencies: [
-        .product(name: "ToolkitAll", package: "MyToolkit") // or import specific modules
-    ])
-]
+// In your Target:
+.target(
+    name: "YourApp",
+    dependencies: [
+        .product(name: "ToolkitAll", package: "MyToolkit"), // All modules
+        // OR individual modules:
+        .product(name: "ToolkitAuth", package: "MyToolkit"),
+        .product(name: "ToolkitNetworking", package: "MyToolkit")
+    ]
+)
 ```
 
 ---
 
-## Module Overview
+## 🛠 Module Deep Dive
 
-| Module | Description |
-|---|---|
-| **`ToolkitCore`** | Foundation of the SDK. Contains `BaseManager`, logging, and DI interfaces. |
-| **`ToolkitPlugins`** | Exposes the `PluginRegistry` for cross-cutting observability and life-cycle hooks. |
-| **`ToolkitUtility`** | 50+ features covering Connectivity, Device Stats, WatchOS integration, and Data Formatting pipelines. |
-| **`ToolkitCrypto`** | Configurable Cryptography with AES/ChaCha strategies, Hashing builders, and Key Management. |
-| **`ToolkitNetworking`** | Network request builders, circuit breakers, offline queues, and interceptor chains. |
-| **`ToolkitAuth`** | Session management, biometric integration, OAuth strategies, and network adaptation. |
-| **`ToolkitCompression`** | Pluggable compression strategies (Zip, LZFSE) and streaming Archive Builders. |
-| **`ToolkitUI`** | Shared SwiftUI components and views (e.g., standard Login configurations). |
-| **`ToolkitAll`** | Umbrella target exporting all modules for convenience. |
+### 1. ToolkitCore: The Foundation
+The heartbeat of the SDK. Provides thread-safe infrastructure.
 
----
-
-## Usage by Module
-
-### ToolkitCore & ToolkitPlugins
-The core layer establishes a plugin-based lifecycle and base classes ensuring thread-safety and extension capabilities.
+- **Dependency Injection**: Use `@Inject` for clean property-based DI.
+- **Task Management**: Actor-based execution and cancellation.
+- **Logging**: Level-based, asynchronous logging with metadata support.
 
 ```swift
 import ToolkitCore
-import ToolkitPlugins
 
-// Create a custom plugin
-class AnalyticsPlugin: PluginProtocol {
-    var id: String = "com.analytics.plugin"
-    func onLoad() { print("Plugin loaded") }
-    func onExecute() { print("Plugin executing") }
-    func onUnload() { print("Plugin unloaded") }
-}
+// Logging with Metadata
+Logger.shared.addMetadata("user_id", value: "12345")
+Logger.shared.log("Initializing Dashboard", level: .info)
 
-// Register across the registry
-PluginRegistry.shared.register(AnalyticsPlugin())
-```
+// Dependency Injection
+DependencyContainer.shared.register(ApiService.self) { MyApiService() }
 
-### ToolkitUtility
-Provides deep system observers and formatters via the `ToolkitUtilityManager`. 
-
-```swift
-import ToolkitUtility
-
-let manager = ToolkitUtilityManager.shared
-
-// Check Network Quality
-let networkType = manager.connectivity.currentNetworkType()
-let isFast = manager.connectivity.connectionQuality() > 0.8
-
-// Device Information
-let battery = manager.device.batteryLevel()
-let memory = manager.device.freeMemory()
-
-// Flexible String Pipeline Builder
-let formatter = FormatPipelineBuilder()
-    .trim()
-    .uppercase()
-    .replace("-", with: " ")
-    .build()
-
-let result = formatter("   hello-world   ") // "HELLO WORLD"
-```
-
-### ToolkitCrypto
-Allows you to build hashes dynamically or apply interchangeable encryption strategies.
-
-```swift
-import ToolkitCrypto
-
-let crypto = ToolkitCryptoManager.shared
-
-// Dynamic Hashing
-let hashResult = HashBuilder()
-    .setAlgorithm(.sha256)
-    .append(string: "secure_payload")
-    .applySalt(mySaltData)
-    .finalizeHex()
-
-// Encryption Strategies
-let strategy = crypto.resolveStrategy(for: .chachaPoly)
-let encrypted = try strategy.encrypt(data, key: myKey, iv: myIV)
-
-// Manage Keys securely
-let newKey = crypto.keyManager.generate(size: .bits256)
-try crypto.keyManager.store(key: newKey, tag: "com.app.master", in: .secureEnclave)
-```
-
-### ToolkitNetworking
-Replaces raw REST calls with a robust Request Builder and Resiliency protocols (Circuit Breakers).
-
-```swift
-import ToolkitNetworking
-
-// Build a highly configured network request
-let request = NetworkRequestBuilder()
-    .url("https://api.example.com/v1/data")
-    .method(.post)
-    .addHeader("X-Custom-Auth", "token")
-    .jsonBody(myCodableObject)
-    .priority(.high)
-    .cachePolicy(.memoryOnly)
-    .retryCount(3)
-    .build()
-
-// Circuit breaker capabilities
-let networkManager = ToolkitNetworkingManager.shared
-if networkManager.circuitBreaker.canExecute() {
-    let response = try await networkManager.execute(request)
+struct DashboardView {
+    @Inject var api: ApiService
 }
 ```
 
-### ToolkitAuth
-Handles Session lifecycles, account routing, and UI-integration strategies.
+---
+
+### 2. ToolkitAuth: Identity & Sessions
+Manages the user lifecycle and integrates deeply with the networking layer.
+
+- **Auto-Adaptation**: Automatically injects Bearer tokens into `URLRequest`s.
+- **Auto-Refresh**: Handles 401 errors by triggering token refresh and retrying.
+- **Biometrics**: Native FaceID/TouchID integration hooks.
 
 ```swift
 import ToolkitAuth
 
-let auth = ToolkitAuthManager.shared
+let auth = Toolkit.auth // Global access point
 
-// Trigger dynamic authentication types
+// Multi-method authentication
 try await auth.authenticate(method: .biometric)
 
-// State driven observation
+// State Observation
 if auth.state == .authenticated {
     let token = auth.session.currentToken()
 }
-
-// Automatically adapt URLRequests (Interceptor)
-let safeRequest = auth.adapt(rawRequest)
 ```
 
-### ToolkitCompression
-Offers abstraction over Zip, LZFSE, and allows archive construction.
+---
+
+### 3. ToolkitNetworking: Resilient Communication
+A robust wrapper around Alamofire/URLSession with enterprise resilience.
+
+- **Request Builder**: Fluent API for complex requests.
+- **Circuit Breaker**: Automatically stops requests to failing endpoints.
+- **Interceptors**: Middleware for request/response modification.
 
 ```swift
-import ToolkitCompression
+import ToolkitNetworking
 
-let compression = ToolkitCompressionManager.shared
+let request = NetworkRequestBuilder()
+    .url("https://api.myapp.com/v1/profile")
+    .method(.get)
+    .retryCount(3)
+    .cachePolicy(.useCacheIfAvailable)
+    .build()
 
-// Strategy-based compression
-let zipStrategy = compression.strategy(for: .zip)
-let compressedData = try zipStrategy.compress(data: rawData, level: .best)
-
-// Build an archive dynamically
-let archiveData = try ArchiveBuilder()
-    .addFile(path: "docs/readme.txt", data: textData)
-    .addFile(path: "images/logo.png", data: imgData)
-    .setPassword("super_secure")
-    .build(format: .lzfse)
+let profile = try await Toolkit.networking.execute(request, decoding: Profile.self)
 ```
+
+---
+
+### 4. ToolkitCrypto: Secure by Default
+Abstraction over Apple's CryptoKit with support for strategy-based encryption.
+
+- **Hashing**: Fluent `HashBuilder` for multi-stage hashing.
+- **Encryption**: Pluggable strategies (AES, ChaChaPoly).
+- **Key Management**: Secure storage and generation.
+
+```swift
+import ToolkitCrypto
+
+// Secure Hashing
+let hash = HashBuilder()
+    .setAlgorithm(.sha256)
+    .append(string: "secret_data")
+    .applySalt(mySalt)
+    .finalizeHex()
+
+// Strategy-based Encryption
+let strategy = ToolkitCryptoManager.shared.resolveStrategy(for: .chachaPoly)
+let encrypted = try strategy.encrypt(payload, key: key, iv: iv)
+```
+
+---
+
+### 5. ToolkitUtility: System Power-ups
+A collection of 50+ utilities for hardware and system interaction.
+
+- **Connectivity**: Real-time network quality and type monitoring.
+- **Device Info**: Battery, thermal state, and memory stats.
+- **Formatting**: High-performance pipeline-based string formatters.
+
+```swift
+import ToolkitUtility
+
+// Connectivity Monitoring
+let isFast = ToolkitUtilityManager.shared.connectivity.connectionQuality() > 0.7
+
+// Formatting Pipeline
+let cleanString = FormatPipelineBuilder()
+    .trim()
+    .uppercase()
+    .replace("-", with: " ")
+    .build()("  hello-world  ") // "HELLO WORLD"
+```
+
+---
+
+### 6. ToolkitPlugins: Observability
+A registry for cross-cutting concerns that need to hook into the SDK lifecycle.
+
+```swift
+import ToolkitPlugins
+
+class AnalyticsPlugin: PluginProtocol {
+    let id = "com.app.analytics"
+    func onLoad() { /* Setup tracking */ }
+    func onExecute() { /* Track app activity */ }
+    func onUnload() { /* Cleanup */ }
+}
+
+PluginRegistry.shared.register(AnalyticsPlugin())
+```
+
+---
+
+## 🧪 Testing Support
+
+The Toolkit is designed for unit testing. Every manager has a corresponding protocol, and the DI container supports overrides.
+
+```swift
+func testLogin() async {
+    let mockAuth = MockAuthManager()
+    DependencyContainer.shared.override(ToolkitAuthManager.self, instance: mockAuth)
+    
+    // Now your app uses the mock automatically
+    let viewModel = LoginViewModel()
+    await viewModel.login()
+    
+    XCTAssertTrue(mockAuth.loginCalled)
+}
+```
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
