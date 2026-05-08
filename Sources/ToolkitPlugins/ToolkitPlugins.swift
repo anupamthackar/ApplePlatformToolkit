@@ -136,6 +136,19 @@ public final class EventBus: @unchecked Sendable {
             self.listeners[event] = current
         }
     }
+
+    /**
+     Registers a closure-based listener for a specific event name.
+     
+     - Parameters:
+        - event: The unique name of the event to observe.
+        - priority: The execution priority. Defaults to 0.
+        - handler: A closure called when the event is published.
+     */
+    public func subscribe(event: String, priority: Int = 0, handler: @escaping @Sendable (TypedEvent) async -> Void) {
+        let listener = ClosureEventListener(priority: priority, handler: handler)
+        subscribe(event: event, listener: listener)
+    }
     
     /**
      Dispatches an event to all subscribed listeners asynchronously.
@@ -155,11 +168,11 @@ public final class EventBus: @unchecked Sendable {
  
  Represents a structured event message transmitted over the `EventBus`.
  */
-public struct TypedEvent {
+public struct TypedEvent: Sendable {
     /// The unique name of the event (e.g., "user_did_login").
     public let name: String
     /// A dictionary of metadata associated with the event.
-    public let payload: [String: Any]
+    public let payload: [String: any Sendable]
     /// The identifier of the module or component that emitted the event.
     public let source: String
     
@@ -171,7 +184,7 @@ public struct TypedEvent {
         - payload: Associated data.
         - source: The origin of the event. Defaults to "system".
      */
-    public init(name: String, payload: [String: Any], source: String = "system") {
+    public init(name: String, payload: [String: any Sendable], source: String = "system") {
         self.name = name
         self.payload = payload
         self.source = source
@@ -184,6 +197,12 @@ public protocol EventListener: Sendable {
     var priority: Int { get }
     /// Called when a matching event is published.
     func onEvent(_ event: TypedEvent) async
+}
+
+internal struct ClosureEventListener: EventListener {
+    let priority: Int
+    let handler: @Sendable (TypedEvent) async -> Void
+    func onEvent(_ event: TypedEvent) async { await handler(event) }
 }
 
 // MARK: - Plugin Manager

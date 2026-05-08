@@ -3,132 +3,79 @@
 [![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat-square)](https://swift.org)
 [![Platform](https://img.shields.io/badge/Platforms-iOS_16%2B_|_macOS_13%2B-blue.svg?style=flat-square)](https://developer.apple.com/ios/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
-[![Modular](https://img.shields.io/badge/Architecture-Modular-blueviolet.svg?style=flat-square)](#-architecture-overview)
 
 **Apple Platform Toolkit** is an enterprise-grade, highly modular SDK designed to accelerate modern Swift development. Built from the ground up for **Swift 6 Concurrency**, it provides a rock-solid, decoupled foundation for high-performance applications.
 
-> [!IMPORTANT]
-> This toolkit is designed for both **Beginners** (using the `ToolkitAll` umbrella) and **Pros** (using individual, decoupled modules for granular control).
+---
+
+## 🏗 Modular Architecture
+
+The toolkit is divided into 10 specialized modules, allowing you to import only what you need.
+
+### Core Modules
+- **`ToolkitCore`**: The foundation. Provides thread-safe Dependency Injection, standardized logging, and task management.
+- **`ToolkitUtility`**: Hardware and system-level utilities including connectivity monitoring and device information.
+- **`ToolkitCrypto`**: High-level abstractions over CryptoKit for AES-GCM, ChaChaPoly, and secure key management.
+- **`ToolkitCompression`**: High-performance data compression using LZFSE, LZ4, and ZLIB algorithms.
+- **`ToolkitFormatter`**: Advanced formatting pipelines for dates, currencies, and complex string transformations.
+
+### Service & Logic Modules
+- **`ToolkitNetworking`**: A robust networking layer with interceptors, circuit breakers, and auto-retry logic.
+- **`ToolkitAuth`**: Identity management with support for Biometrics, Keychain storage, and session lifecycle.
+
+### Extension & UI Modules
+- **`ToolkitUI`**: A fully customizable, scalable UI framework with dynamic theming and reusable professional components.
+- **`ToolkitPlugins`**: An extensibility layer featuring a high-performance EventBus and modular plugin registry.
+- **`ToolkitAll`**: The umbrella module that exports the entire SDK for streamlined integration.
 
 ---
 
-## 🏗 Architecture Overview
+## 🎨 Customizable UI Framework (`ToolkitUI`)
 
-The toolkit follows a strict **4-layer architectural pattern**, ensuring maximum testability and scalability.
+The `ToolkitUI` module is designed to be a scalable design system. By modifying the `ThemeConfig`, you can completely transform the look and feel of your application without changing a single line of component code.
 
-### Dependency Graph
-```mermaid
-graph TD
-    subgraph FeatureLayer ["Feature Layer (UI)"]
-        ToolkitUI["ToolkitUI (SwiftUI Components)"]
-    end
-
-    subgraph ServiceLayer ["Service Layer (Logic)"]
-        ToolkitAuth["ToolkitAuth (Identity)"] --> ToolkitNetworking
-        ToolkitNetworking["ToolkitNetworking (API)"] --> ToolkitCore
-    end
-
-    subgraph CoreLayer ["Core Layer (Infrastructure)"]
-        ToolkitCore["ToolkitCore (DI, Logging, Task Management)"]
-        ToolkitCrypto["ToolkitCrypto (Security)"]
-        ToolkitUtility["ToolkitUtility (System Info & Connectivity)"]
-        ToolkitCompression["ToolkitCompression (LZFSE, LZ4)"]
-        ToolkitFormatter["ToolkitFormatter (Dates, Currency, Pipelines)"]
-    end
-
-    subgraph PluginLayer ["Plugin Layer (Extensibility)"]
-        ToolkitPlugins["ToolkitPlugins (Analytics, Monitoring, EventBus)"] --> ToolkitCore
-    end
+```swift
+var customTheme = ThemeConfig()
+customTheme.primaryColor = .indigo
+customTheme.cornerRadius = 24
+ThemeManager.shared.apply(customTheme)
 ```
 
----
-
-## 📦 Module Reference
-
-| Module | Responsibility | Key Features |
-| :--- | :--- | :--- |
-| **`ToolkitCore`** | Foundation | DI Container, Async Logger, Task Manager, Lifecycle Management. |
-| **`ToolkitNetworking`** | Communication | URLSession wrapper, Interceptors, Circuit Breaker, Auto-Retry. |
-| **`ToolkitAuth`** | Identity | Session management, OAuth2, Biometrics, Token Auto-Adaptation. |
-| **`ToolkitCrypto`** | Security | AES-GCM, ChaChaPoly, PBKDF2, Secure Hashing, Key Management. |
-| **`ToolkitCompression`** | Performance | LZFSE, LZ4, ZLIB, Batch & Streaming compression, CRC32. |
-| **`ToolkitUtility`** | System | Reachability, Device Hardware Stats, Watch Connectivity. |
-| **`ToolkitFormatter`** | Transformation | ISO8601, Currency, Abbreviated Numbers, String Pipelines. |
-| **`ToolkitUI`** | Interface | Global Themes, HUD/Toasts, Pre-built Login & Settings views. |
-| **`ToolkitPlugins`** | Observability | Plugin Registry, EventBus (Pub/Sub), Context-aware execution. |
-| **`ToolkitAll`** | Umbrella | Imports and exports all of the above in one statement. |
+### Key Components
+- **Buttons**: Multi-style, loading states, and scale animations.
+- **Inputs**: Secure entry, validation states, and icon integration.
+- **Containers**: Standardized cards with configurable shadows and gradients.
+- **Feedback**: Global HUD and non-blocking toast notifications.
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Getting Started
 
-### 1. Installation
-Add via **Swift Package Manager** in Xcode (File > Add Packages...):
+### Installation
+Add via **Swift Package Manager**:
 `https://github.com/anupamthackar/ApplePlatformToolkit.git`
 
-### 2. Basic Setup
+### Simple Usage
 ```swift
 import ToolkitAll
 
-// Standard logging
-Toolkit.core.logger.log("App Started", level: .info)
-
-// Perform an API request
-let result = try await Toolkit.networking.execute(request, decoding: User.self)
+// Use the global facade for all modules
+Toolkit.ui.showSuccess("Welcome to the Toolkit!")
+let key = Toolkit.crypto.generateKey()
 ```
 
 ---
 
-## 🛠 Advanced Usage (For Pros)
+## 📱 Toolkit Demo App
 
-### 💉 Dependency Injection
-Decouple your features using our thread-safe container:
-```swift
-// Register
-DependencyContainer.shared.register(ApiService.self) { RealApiService() }
+The project includes a comprehensive **ToolkitDemo.swiftpm** application to showcase every module in action.
 
-// Inject
-struct ProfileView {
-    @Inject var api: ApiService
-}
-```
-
-### 🔐 Secure Encryption
-High-level abstractions over `CryptoKit`:
-```swift
-let crypto = Toolkit.crypto
-let key = crypto.generateKey()
-let encrypted = try await crypto.encrypt(myData, key: key)
-```
-
-### 🛰 Plugin System & EventBus
-Extend the SDK without modifying it:
-```swift
-// Listen for events
-EventBus.shared.subscribe(event: "login_success") { event in
-    Analytics.track(event.name)
-}
-
-// Register a plugin
-try PluginManager.shared.register(MyCustomPlugin())
-```
+> [!IMPORTANT]
+> **Running the Demo**: For the best experience and full architecture visualization, please run the demo using the **"My Mac"** destination in Xcode. The demo is intended for exploration, understanding the modular architecture, and code performance evaluation. It is not currently optimized for iOS Simulator execution.
 
 ---
-
-## 📄 Release & Documentation
-- **API Documentation**: Every public method, class, and property is documented with `///` for **Xcode Quick Help** support.
-- **Next Release**: Includes the full documentation overhaul, enhanced compression streaming, and the new EventBus system.
-
----
-
-## 🤝 Contributing
-Contributions are what make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 ---
 
 ## 📄 License
 Distributed under the **MIT License**. See `LICENSE` for more information.
-
-<p align="center">
-  Made with ❤️ for the Apple Developer Community
-</p>

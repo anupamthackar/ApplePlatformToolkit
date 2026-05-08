@@ -19,6 +19,13 @@ struct AuthDemoView: View {
                         .bold()
                 }
                 
+                TextField("User Email", text: $email)
+                    .textFieldStyle(.roundedBorder)
+                    .disableAutocorrection(true)
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
+                
                 if auth.state == .authenticated {
                     LabeledContent("Token", value: auth.session.currentToken() ?? "None")
                     Button("Logout", role: .destructive) {

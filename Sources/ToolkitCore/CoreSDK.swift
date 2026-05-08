@@ -203,14 +203,14 @@ public actor LifecycleManager {
 
 // MARK: - Configuration System
 
-public enum Environment: Sendable { 
+public enum ToolkitEnvironment: Sendable { 
     case dev, staging, prod 
 }
 
 public final class ConfigManager: @unchecked Sendable {
     public static let shared = ConfigManager()
     private var config: [String: Any] = [:]
-    public var environment: Environment = .prod
+    public var environment: ToolkitEnvironment = .prod
     public init() {}
     public func load(dictionary: [String: Any]) {
         self.config.merge(dictionary) { _, new in new }

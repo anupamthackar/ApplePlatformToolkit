@@ -9,43 +9,68 @@ import Combine
  
  A collection of design tokens including colors, typography, spacing, and animation settings.
  Use this to define the visual brand of your application.
- 
- ## Usage
- ```swift
- var myTheme = ThemeConfig()
- myTheme.primaryColor = .blue
- myTheme.cornerRadius = 20
- ```
  */
 public struct ThemeConfig: Sendable {
     // MARK: - Colors
-    public var primaryColor: Color = Color(red: 0.33, green: 0.42, blue: 0.98)
-    public var secondaryColor: Color = Color(red: 0.98, green: 0.56, blue: 0.23)
-    public var backgroundColor: Color = .white
-    public var surfaceColor: Color = Color(white: 0.95)
-    public var errorColor: Color = Color.red
-    public var successColor: Color = Color.green
-    public var warningColor: Color = Color.orange
-    public var textPrimary: Color = .black
-    public var textSecondary: Color = .gray
+    public var primaryColor: Color = Color.blue
+    public var secondaryColor: Color = Color.secondary
+    
+    // Adaptive Backgrounds
+    public var backgroundColor: Color = {
+        #if os(iOS)
+        return Color(uiColor: .systemGroupedBackground)
+        #else
+        return Color(nsColor: .windowBackgroundColor)
+        #endif
+    }()
+    
+    public var surfaceColor: Color = {
+        #if os(iOS)
+        return Color(uiColor: .secondarySystemGroupedBackground)
+        #else
+        return Color(nsColor: .controlBackgroundColor)
+        #endif
+    }()
+    
+    public var errorColor: Color = .red
+    public var successColor: Color = .green
+    public var warningColor: Color = .orange
+    
+    // Adaptive Text
+    public var textPrimary: Color = .primary
+    public var textSecondary: Color = .secondary
+    public var textTertiary: Color = .secondary.opacity(0.7)
+    public var borderColor: Color = Color.gray.opacity(0.2)
+
+    // MARK: - Gradients
+    public var primaryGradient: LinearGradient {
+        LinearGradient(colors: [primaryColor, primaryColor.opacity(0.85)], startPoint: .top, endPoint: .bottom)
+    }
 
     // MARK: - Typography
-    public var fontFamily: String = "SF Pro Display"
-    public var headingSize: CGFloat = 28
-    public var subheadingSize: CGFloat = 20
-    public var bodySize: CGFloat = 16
-    public var captionSize: CGFloat = 12
+    public var fontFamily: String = "SF Pro"
+    public var titleFont: Font = .system(size: 28, weight: .bold, design: .rounded)
+    public var headlineFont: Font = .system(size: 17, weight: .semibold, design: .default)
+    public var bodyFont: Font = .system(size: 15, weight: .regular, design: .default)
+    public var captionFont: Font = .system(size: 12, weight: .medium, design: .default)
 
-    // MARK: - Spacing
+    // MARK: - Spacing & Shape
     public var cornerRadius: CGFloat = 12
+    public var cardCornerRadius: CGFloat = 16
     public var smallPadding: CGFloat = 8
     public var defaultPadding: CGFloat = 16
     public var largePadding: CGFloat = 24
+    public var borderWidth: CGFloat = 0.5
+
+    // MARK: - Shadows
+    public var cardShadowColor: Color = Color.black.opacity(0.04)
+    public var cardShadowRadius: CGFloat = 10
+    public var cardShadowOffset: CGPoint = CGPoint(x: 0, y: 4)
 
     // MARK: - Animation
-    public var animationDuration: Double = 0.25
-    public var springResponse: Double = 0.4
-    public var springDamping: Double = 0.8
+    public var animationDuration: Double = 0.3
+    public var springResponse: Double = 0.35
+    public var springDamping: Double = 0.85
 
     // MARK: - Mode
     public var colorScheme: ColorScheme?
@@ -55,58 +80,24 @@ public struct ThemeConfig: Sendable {
 
 // MARK: - Theme Manager Documentation
 
-/**
- # ThemeManager
- 
- An observable object that manages the active `ThemeConfig`.
- It allows for runtime theme switching (e.g., Light vs Dark mode) and propagates
- changes down the SwiftUI view hierarchy via environment values.
- 
- ## Usage
- ```swift
- // In your App entry point
- ContentView()
-     .tkThemed(ThemeManager.shared)
- 
- // Anywhere in your code
- ThemeManager.shared.applyDarkMode()
- ```
- */
 @MainActor
 public final class ThemeManager: ObservableObject, Sendable {
-    /// Global shared instance.
     public static let shared = ThemeManager()
-
-    /// The currently active design tokens.
     @Published public var current: ThemeConfig = ThemeConfig()
-
     public init() {}
 
-    /**
-     Applies a new theme configuration with an optional animation.
-     */
     public func apply(_ theme: ThemeConfig) {
         withAnimation(.easeInOut(duration: theme.animationDuration)) {
             current = theme
         }
     }
 
-    /**
-     Short-cut to apply a predefined high-contrast Dark Mode theme.
-     */
     public func applyDarkMode() {
         var dark = ThemeConfig()
-        dark.backgroundColor = Color(red: 0.05, green: 0.05, blue: 0.08)
-        dark.surfaceColor = Color(red: 0.12, green: 0.12, blue: 0.16)
-        dark.textPrimary = .white
-        dark.textSecondary = Color(white: 0.7)
         dark.colorScheme = .dark
         apply(dark)
     }
 
-    /**
-     Short-cut to reset to the standard Light Mode theme.
-     */
     public func applyLightMode() {
         var light = ThemeConfig()
         light.colorScheme = .light
@@ -121,7 +112,6 @@ private struct ThemeKey: EnvironmentKey {
 }
 
 public extension EnvironmentValues {
-    /// Access the toolkit theme design tokens from any SwiftUI view.
     var tkTheme: ThemeConfig {
         get { self[ThemeKey.self] }
         set { self[ThemeKey.self] = newValue }
@@ -138,10 +128,6 @@ struct TKThemeModifier: ViewModifier {
 }
 
 public extension View {
-    /**
-     Injects the `ThemeManager` into the view hierarchy.
-     All toolkit components will automatically adapt to the manager's state.
-     */
     func tkThemed(_ manager: ThemeManager = .shared) -> some View {
         modifier(TKThemeModifier(themeManager: manager))
     }

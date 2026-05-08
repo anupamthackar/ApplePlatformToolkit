@@ -71,19 +71,33 @@ struct LoggingSection: View {
 
 // MARK: - Dependency Injection
 struct DISection: View {
+    @State private var diKey = "API_KEY"
+    @State private var diValue = "SECRET_12345"
     @State private var resolvedValue = "Not Resolved"
     
     var body: some View {
         Section("Dependency Container") {
-            Button("Register MockService") {
-                DependencyContainer.shared.register(String.self, name: "API_KEY") { "SECRET_12345" }
+            VStack(spacing: 12) {
+                TextField("Key", text: $diKey)
+                    .textFieldStyle(.roundedBorder)
+                TextField("Value", text: $diValue)
+                    .textFieldStyle(.roundedBorder)
+                
+                HStack {
+                    Button("Register") {
+                        DependencyContainer.shared.register(String.self, name: diKey) { diValue }
+                    }
+                    .buttonStyle(.bordered)
+                    
+                    Button("Resolve") {
+                        resolvedValue = DependencyContainer.shared.resolve(String.self, name: diKey) ?? "Not Found"
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
             }
+            .padding(.vertical, 8)
             
-            Button("Resolve API_KEY") {
-                resolvedValue = DependencyContainer.shared.resolve(String.self, name: "API_KEY") ?? "Not Found"
-            }
-            
-            Text("Resolved: \(resolvedValue)")
+            Text("Resolved Output: \(resolvedValue)")
                 .bold()
                 .foregroundColor(.blue)
         }
@@ -97,16 +111,19 @@ struct ConfigSection: View {
     
     var body: some View {
         Section("Configuration Manager") {
+            TextField("Feature Key", text: $featureKey)
+                .textFieldStyle(.roundedBorder)
+            
             LabeledContent("Environment", value: "\(ConfigManager.shared.environment)")
             
-            Toggle("Experimental Feature", isOn: $isEnabled)
+            Toggle("Toggle Feature Status", isOn: $isEnabled)
                 .onChange(of: isEnabled) { newValue in
                     ConfigManager.shared.load(dictionary: [featureKey: newValue])
                 }
             
-            Button("Check via Manager") {
+            Button("Verify Status in Manager") {
                 let status = ConfigManager.shared.isFeatureEnabled(featureKey)
-                print("Feature Status: \(status)")
+                print("Feature '\(featureKey)' Status: \(status)")
             }
         }
     }

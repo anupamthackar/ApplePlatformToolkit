@@ -124,10 +124,10 @@ public struct TKLoginView: View {
                             )
                         )
                     Text("Welcome Back")
-                        .font(.system(size: theme.headingSize, weight: .bold, design: .rounded))
+                        .font(theme.titleFont)
                         .foregroundColor(theme.textPrimary)
                     Text("Sign in to continue")
-                        .font(.system(size: theme.bodySize))
+                        .font(theme.bodyFont)
                         .foregroundColor(theme.textSecondary)
                 }
                 .padding(.top, 40)
@@ -162,7 +162,7 @@ public struct TKLoginView: View {
                         Image(systemName: "exclamationmark.circle.fill")
                         Text(error)
                     }
-                    .font(.system(size: 13))
+                    .font(theme.captionFont)
                     .foregroundColor(theme.errorColor)
                     .padding(10)
                     .background(theme.errorColor.opacity(0.1))
