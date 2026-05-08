@@ -7,20 +7,25 @@ import ToolkitCore
  # ToolkitUI
  
  The primary entry point for all User Interface services within the Toolkit SDK.
- It provides unified access to themes, toasts, global state, and ready-to-use views.
+ It provides unified access to modular themes, toast notifications, global state, 
+ and ready-to-use professional SwiftUI views.
+ 
+ ## Features
+ - **Theme Management**: Dynamic switching between light, dark, and custom branding.
+ - **Notifications**: Global HUD and toast system for async operation feedback.
+ - **State Sharing**: Synchronized data flow across disparate views.
+ - **Component Library**: Pre-built, enterprise-grade components like Login and Settings views.
  
  ## Usage
  ```swift
- // Configure the UI layer
+ // 1. Configure behavior
  Toolkit.ui.configure(UIConfig(animationsEnabled: true))
  
- // Show a global success notification
- Toolkit.ui.showSuccess("Saved Changes!")
+ // 2. Trigger a global notification
+ Toolkit.ui.showSuccess("Document Saved")
  
- // Create a pre-built login view
- let loginView = Toolkit.ui.makeLoginView {
-     print("User logged in!")
- }
+ // 3. Instantiate a modular view
+ let settingsView = Toolkit.ui.makeSettingsView()
  ```
  */
 @MainActor
@@ -28,27 +33,35 @@ public final class ToolkitUI: Sendable {
 
     // MARK: - Singleton
 
-    /// Shared global instance for UI management.
+    /// Shared global instance for centralized UI management.
     public static let shared = ToolkitUI()
 
     // MARK: - Sub-managers
 
-    /// The manager for active design tokens and theme switching.
+    /// The manager responsible for active design tokens, fonts, and theme switching.
     public let theme: ThemeManager
-    /// The manager for displaying global HUD/Toast notifications.
+    
+    /// The manager for displaying global, non-blocking HUD and Toast notifications.
     public let toast: ToastManager
-    /// The container for cross-view state sharing.
+    
+    /// The container for shared global state that needs to persist across view transitions.
     public let globalState: GlobalStateContainer
 
     // MARK: - Config
 
-    /// Current global UI behavior settings.
+    /// Current global UI behavior settings (e.g., animations, retry logic).
     public private(set) var uiConfig: UIConfig
 
     // MARK: - Init
 
     /**
-     Initializes the UI facade with specific sub-managers.
+     Initializes the UI facade with specific sub-managers or defaults.
+     
+     - Parameters:
+        - uiConfig: Global behavioral settings. Defaults to `UIConfig()`.
+        - theme: A custom theme manager instance.
+        - toast: A custom toast manager instance.
+        - globalState: A custom global state container.
      */
     public init(
         uiConfig: UIConfig = UIConfig(),
@@ -65,7 +78,9 @@ public final class ToolkitUI: Sendable {
     // MARK: - Configuration
 
     /**
-     Updates the global UI configuration and optionally applies a new theme.
+     Updates the global UI behavior and optionally applies a new visual theme.
+     
+     - Parameter config: The new configuration to apply.
      */
     public func configure(_ config: UIConfig) {
         self.uiConfig = config
@@ -77,7 +92,11 @@ public final class ToolkitUI: Sendable {
     // MARK: - Toast Shortcuts
 
     /**
-     Displays a success toast notification at the top/bottom of the screen.
+     Displays a success notification overlay.
+     
+     - Parameters:
+        - message: The success message to display.
+        - duration: How long the notification should stay on screen. Defaults to 3.0s.
      */
     @MainActor
     public func showSuccess(_ message: String, duration: Double = 3.0) {
@@ -85,7 +104,11 @@ public final class ToolkitUI: Sendable {
     }
 
     /**
-     Displays an error toast notification.
+     Displays an error notification overlay.
+     
+     - Parameters:
+        - message: The error description.
+        - duration: How long the notification should stay on screen. Defaults to 4.0s.
      */
     @MainActor
     public func showError(_ message: String, duration: Double = 4.0) {
@@ -93,7 +116,9 @@ public final class ToolkitUI: Sendable {
     }
 
     /**
-     Displays an informational toast notification.
+     Displays an informational notification overlay.
+     
+     - Parameter message: The info message.
      */
     @MainActor
     public func showInfo(_ message: String) {
@@ -103,11 +128,12 @@ public final class ToolkitUI: Sendable {
     // MARK: - View Factories
 
     /**
-     Creates a fully configured `TKLoginView` integrated with the `ToolkitAuth` layer.
+     Creates a fully configured `TKLoginView` integrated with the `ToolkitAuth` backend.
+     
      - Parameters:
-        - config: Optional configuration for titles, icons, etc.
-        - onSuccess: Closure executed after a successful authentication.
-     - Returns: A themed SwiftUI view.
+        - config: Visual and behavioral settings for the login screen.
+        - onSuccess: A closure executed after the user successfully authenticates.
+     - Returns: A fully-themed SwiftUI view ready for presentation.
      */
     @MainActor
     public func makeLoginView(config: LoginViewModel.Config = LoginViewModel.Config(), onSuccess: (() -> Void)? = nil) -> some View {
@@ -121,28 +147,26 @@ public final class ToolkitUI: Sendable {
 /**
  # UIConfig
  
- Configuration options that control the behavioral aspects of the ToolkitUI layer.
+ Configuration options that control behavioral and visual aspects of the ToolkitUI layer.
  */
 public struct UIConfig: Sendable {
-    /// An optional custom theme to apply during configuration.
+    /// An optional theme configuration to be applied globally upon initialization.
     public var themeConfig: ThemeConfig? = nil
-    /// Whether to show standard transitions and animations.
+    /// Whether to enable standard view transitions and micro-animations. Defaults to `true`.
     public var animationsEnabled: Bool = true
-    /// The text displayed in the global loading overlay.
+    /// The default text displayed during global loading states. Defaults to "Loading…".
     public var defaultLoadingMessage: String = "Loading…"
-    /// If true, failed views will show a "Retry" button where applicable.
+    /// If enabled, specific UI components will offer a "Retry" button upon failure. Defaults to `true`.
     public var errorRetryEnabled: Bool = true
 
+    /// Initializes a default configuration instance.
     public init() {}
 }
 
 // MARK: - Toolkit Namespace
 
-/**
- The primary SDK namespace. Use `Toolkit.ui` to access all user interface services.
- */
 public extension Toolkit {
-    /// Global access point for the ToolkitUI module.
+    /// Global access point for the ToolkitUI module services.
     @MainActor
     static var ui: ToolkitUI { ToolkitUI.shared }
 }

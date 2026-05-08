@@ -1,45 +1,51 @@
 import Foundation
 import ToolkitCore
 
-// MARK: - Core Protocols Documentation
+// MARK: - Core Protocols
 
 /**
  # ToolkitPlugin
  
  A protocol defining the structure and behavior of a plugin within the Toolkit ecosystem.
- Plugins support lifecycle management, dependency resolution, and priority-based execution.
+ Plugins allow for modular extensibility, supporting lifecycle management, dependency resolution, 
+ and priority-based execution ordering.
  
  ## Usage
  ```swift
- final class MyPlugin: ToolkitPlugin {
-     let id = "com.myapp.plugin"
+ final class AnalyticsPlugin: ToolkitPlugin {
+     let id = "com.myapp.analytics"
      let version = "1.0.0"
-     let priority = 10
+     let priority = 100
      let dependencies = ["com.toolkit.core"]
      
      func onExecute(context: PluginContext) async throws {
-         print("Executing plugin with context")
+         // Perform analytics setup
+         context.logger.log("Analytics started", level: .info)
      }
  }
  ```
  */
 public protocol ToolkitPlugin: PluginProtocol {
-    /// Semantic version string (e.g., "1.2.3").
+    /// A semantic version string for the plugin (e.g., "1.2.3").
     var version: String { get }
-    /// Relative priority. Plugins with higher values are executed first.
+    
+    /// The relative priority of the plugin. Plugins with higher values are executed earlier in the sequence.
     var priority: Int { get }
-    /// A list of plugin IDs that must be registered before this plugin can load.
+    
+    /// A list of plugin identifiers that must be registered before this plugin can be loaded.
     var dependencies: [String] { get }
     
     /**
-     The core execution logic for the plugin.
-     - Parameter context: Provides access to shared resources like loggers and shared state.
+     The core logic to be executed by the plugin manager.
+     
+     - Parameter context: A shared object providing access to configuration, logging, and common state.
+     - Throws: `PluginError` if execution fails.
      */
     func onExecute(context: PluginContext) async throws
 }
 
 public extension ToolkitPlugin {
-    /// Bridges the simple `PluginProtocol` to the more advanced `ToolkitPlugin`.
+    /// Bridges the simple `PluginProtocol` to the more advanced `ToolkitPlugin` interface.
     func onExecute() { }
 }
 
@@ -47,56 +53,80 @@ public extension ToolkitPlugin {
  # PluginContext
  
  A shared container passed to plugins during their execution phase.
- Provides access to configuration, logging, and dependency resolution.
+ It provides access to global configuration, diagnostic logging, and a shared state dictionary 
+ for inter-plugin communication.
  */
 public class PluginContext {
-    /// Static configuration data for the plugin.
+    /// Static configuration data specific to the current plugin session.
     public let configuration: [String: Any]
-    /// Shared logger for diagnostic information.
+    
+    /// A shared logger instance for recording diagnostic and lifecycle information.
     public let logger: LoggerProtocol
-    /// A thread-safe dictionary for passing data between different plugins in the same session.
+    
+    /// A thread-safe dictionary used to pass data between different plugins in the same execution cycle.
     public var sharedState: [String: Any] = [:]
     
+    /**
+     Initializes a new plugin context.
+     
+     - Parameters:
+        - configuration: Session-specific settings.
+        - logger: The logger to be used by plugins.
+     */
     public init(configuration: [String: Any] = [:], logger: LoggerProtocol = Logger.shared) {
         self.configuration = configuration
         self.logger = logger
     }
     
     /**
-     Attempts to resolve a dependency from the host application's dependency container.
+     Attempts to resolve a specific dependency from the host application's dependency container.
+     
+     - Parameter type: The type of dependency to resolve.
+     - Returns: An instance of the type, or `nil` if not found.
      */
     public func resolveDependency<T>(_ type: T.Type) -> T? {
-        return nil // Integration point for future DI logic
+        return DependencyContainer.shared.resolve(type)
     }
 }
 
-// MARK: - Event Bus Documentation
+// MARK: - Event Bus
 
 /**
  # EventBus
  
- A simple, thread-safe publish-subscribe mechanism for decoupled communication
- between different modules and plugins.
+ A high-performance, thread-safe publish-subscribe mechanism for decoupled communication
+ between different modules, services, and plugins.
  
  ## Usage
  ```swift
- EventBus.shared.subscribe(event: "user_logged_in") { event in
-     print("User \(event.payload["id"] ?? "") logged in!")
+ // 1. Subscribe to an event
+ EventBus.shared.subscribe(event: "session_started") { event in
+     print("Session ID: \(event.payload["id"] ?? "")")
  }
  
- await EventBus.shared.publish(TypedEvent(name: "user_logged_in", payload: ["id": "123"]))
+ // 2. Publish an event
+ await EventBus.shared.publish(TypedEvent(
+     name: "session_started", 
+     payload: ["id": "XYZ"]
+ ))
  ```
  */
 public final class EventBus: @unchecked Sendable {
-    /// The global shared event bus.
+    /// The global shared instance of the event bus.
     public nonisolated(unsafe) static let shared = EventBus()
+    
     private var listeners: [String: [EventListener]] = [:]
     private let queue = DispatchQueue(label: "com.toolkit.eventbus", attributes: .concurrent)
     
+    /// Internal initializer for singleton use.
     public init() {}
     
     /**
      Registers a listener for a specific event name.
+     
+     - Parameters:
+        - event: The unique name of the event to observe.
+        - listener: The object that will handle the event when published.
      */
     public func subscribe(event: String, listener: EventListener) {
         queue.async(flags: .barrier) {
@@ -108,7 +138,9 @@ public final class EventBus: @unchecked Sendable {
     }
     
     /**
-     Dispatches an event to all subscribed listeners.
+     Dispatches an event to all subscribed listeners asynchronously.
+     
+     - Parameter event: The event object containing name and payload.
      */
     public func publish(_ event: TypedEvent) async {
         let targets = queue.sync { self.listeners[event.name] ?? [] }
@@ -119,13 +151,26 @@ public final class EventBus: @unchecked Sendable {
 }
 
 /**
- Represents a structured event emitted on the `EventBus`.
+ # TypedEvent
+ 
+ Represents a structured event message transmitted over the `EventBus`.
  */
 public struct TypedEvent {
+    /// The unique name of the event (e.g., "user_did_login").
     public let name: String
+    /// A dictionary of metadata associated with the event.
     public let payload: [String: Any]
+    /// The identifier of the module or component that emitted the event.
     public let source: String
     
+    /**
+     Initializes a new event.
+     
+     - Parameters:
+        - name: The event name.
+        - payload: Associated data.
+        - source: The origin of the event. Defaults to "system".
+     */
     public init(name: String, payload: [String: Any], source: String = "system") {
         self.name = name
         self.payload = payload
@@ -133,48 +178,61 @@ public struct TypedEvent {
     }
 }
 
-/**
- Protocol for objects that want to listen for events on the `EventBus`.
- */
+/// Defines the interface for objects that observe events on the `EventBus`.
 public protocol EventListener: Sendable {
+    /// The priority of the listener. Lower values are called later.
     var priority: Int { get }
+    /// Called when a matching event is published.
     func onEvent(_ event: TypedEvent) async
 }
 
-// MARK: - Plugin Manager Documentation
+// MARK: - Plugin Manager
 
 /**
  # PluginManager
  
- The registry and executor for all toolkit plugins.
- Handles dependency validation, topological execution ordering, and plugin lifecycle.
+ The central registry and execution coordinator for all toolkit-compliant plugins.
+ It manages dependency validation, topological execution ordering, and plugin lifecycle.
  
  ## Usage
  ```swift
- try PluginManager.shared.register(MyPlugin())
+ // 1. Register plugins
+ try PluginManager.shared.register(LoggingPlugin())
+ try PluginManager.shared.register(AnalyticsPlugin())
+ 
+ // 2. Trigger execution
  await PluginManager.shared.executeAll()
  ```
  */
 public final class PluginManager: @unchecked Sendable {
-    /// Shared singleton manager.
+    /// Shared singleton instance of the `PluginManager`.
     public nonisolated(unsafe) static let shared = PluginManager()
     
     private var plugins: [String: ToolkitPlugin] = [:]
     private var executionOrder: [ToolkitPlugin] = []
     
-    /// Global configuration for plugin behaviors.
+    /// Global configuration settings for the plugin system.
     public let config: PluginConfig
-    /// The shared context provided to all plugins.
+    
+    /// The shared context provided to every plugin during execution.
     public let context = PluginContext()
+    
     private let accessQueue = DispatchQueue(label: "com.toolkit.pluginmanager", attributes: .concurrent)
     
+    /**
+     Initializes the manager with specific settings.
+     - Parameter config: Configuration for dependency checks and failure isolation.
+     */
     public init(config: PluginConfig = PluginConfig()) {
         self.config = config
     }
     
     /**
-     Registers a new plugin.
-     - Throws: `PluginError.missingDependency` if requirements aren't met.
+     Registers a new plugin with the manager.
+     
+     - Parameter plugin: The plugin instance to register.
+     - Returns: `true` if registration was successful.
+     - Throws: `PluginError.missingDependency` if requirements are not met and `strictDependencies` is enabled.
      */
     @discardableResult
     public func register(_ plugin: ToolkitPlugin) throws -> Bool {
@@ -195,7 +253,9 @@ public final class PluginManager: @unchecked Sendable {
     }
     
     /**
-     Unloads and removes a plugin by its ID.
+     Unloads and removes a plugin by its unique identifier.
+     
+     - Parameter id: The ID of the plugin to remove.
      */
     public func unregister(id: String) {
         accessQueue.async(flags: .barrier) {
@@ -208,7 +268,7 @@ public final class PluginManager: @unchecked Sendable {
     }
     
     /**
-     Executes all registered plugins in order of their priority.
+     Executes all registered plugins in the order defined by their priority and dependencies.
      */
     public func executeAll() async {
         let targets = accessQueue.sync { executionOrder }
@@ -224,7 +284,10 @@ public final class PluginManager: @unchecked Sendable {
     }
     
     /**
-     Retrieves a registered plugin by its identifier.
+     Retrieves a registered plugin by its identifier for manual interaction.
+     
+     - Parameter id: The identifier of the plugin.
+     - Returns: The plugin instance if registered.
      */
     public func fetch(id: String) -> ToolkitPlugin? {
         return accessQueue.sync { plugins[id] }
@@ -235,28 +298,38 @@ public final class PluginManager: @unchecked Sendable {
     }
 }
 
-/**
- Errors thrown during plugin registration or execution.
- */
+/// Represents errors that can occur during the plugin lifecycle.
 public enum PluginError: Error {
+    /// Thrown when a required dependency for a plugin is not found.
     case missingDependency(String)
+    /// Thrown when a plugin's version is not compatible with the current manager.
     case incompatibleVersion
+    /// Thrown when a plugin encounters a critical failure during its execution phase.
     case executionFailed(String)
 }
 
 /**
- Configuration for the `PluginManager`.
+ # PluginConfig
+ 
+ Configuration settings for the `PluginManager`.
  */
 public struct PluginConfig {
-    /// If true, registration fails if dependencies are not already loaded.
+    /// If true, a plugin cannot be registered unless all its dependencies are already present.
     public var strictDependencies: Bool = true
-    /// If true, a single plugin failure won't stop other plugins from executing.
+    /// If true, a failure in one plugin will not prevent the rest of the chain from executing.
     public var isolateFailures: Bool = true
+    
+    /// Initializes a default configuration.
     public init() {}
 }
 
-// MARK: - Example Plugins
+// MARK: - Standard Plugins
 
+/**
+ # LoggingPlugin
+ 
+ A standard plugin that provides diagnostic logging during the toolkit execution phase.
+ */
 public final class LoggingPlugin: ToolkitPlugin, @unchecked Sendable {
     public var id: String = "com.toolkit.logging"
     public var version: String = "1.0.0"
@@ -271,6 +344,11 @@ public final class LoggingPlugin: ToolkitPlugin, @unchecked Sendable {
     }
 }
 
+/**
+ # AnalyticsPlugin
+ 
+ A standard plugin for recording usage metrics and application events.
+ */
 public final class AnalyticsPlugin: ToolkitPlugin, @unchecked Sendable {
     public var id: String = "com.toolkit.analytics"
     public var version: String = "1.0.0"
@@ -281,4 +359,11 @@ public final class AnalyticsPlugin: ToolkitPlugin, @unchecked Sendable {
     public func onLoad() { }
     public func onUnload() { }
     public func onExecute(context: PluginContext) async throws { }
+}
+
+// MARK: - Toolkit Extension
+
+public extension Toolkit {
+    /// Global access point for the ToolkitPlugins module.
+    static var plugins: PluginManager { PluginManager.shared }
 }

@@ -1,4 +1,10 @@
 // swift-tools-version: 6.0
+/**
+ # Apple Platform Toolkit
+ 
+ A high-performance, modular, and enterprise-grade SDK for modern Apple platform development.
+ This package is organized into a 4-layer architecture: Core, Service, Feature, and Plugin.
+ */
 
 import PackageDescription
 
@@ -11,24 +17,24 @@ let package = Package(
     ],
     
     products: [
-        // MARK: - Core
+        // MARK: - Core Layer (Infrastructure)
         .library(name: "ToolkitCore",        targets: ["ToolkitCore"]),
         .library(name: "ToolkitUtility",     targets: ["ToolkitUtility"]),
         .library(name: "ToolkitCrypto",      targets: ["ToolkitCrypto"]),
         .library(name: "ToolkitCompression", targets: ["ToolkitCompression"]),
         .library(name: "ToolkitFormatter",   targets: ["ToolkitFormatter"]),
         
-        // MARK: - Service
+        // MARK: - Service Layer (Business Logic)
         .library(name: "ToolkitNetworking",  targets: ["ToolkitNetworking"]),
         .library(name: "ToolkitAuth",        targets: ["ToolkitAuth"]),
         
-        // MARK: - Feature
+        // MARK: - Feature Layer (User Interface)
         .library(name: "ToolkitUI",          targets: ["ToolkitUI"]),
         
-        // MARK: - Plugin
+        // MARK: - Plugin Layer (Extensibility)
         .library(name: "ToolkitPlugins",     targets: ["ToolkitPlugins"]),
         
-        // MARK: - Umbrella
+        // MARK: - Umbrella (All-in-One)
         .library(name: "ToolkitAll",         targets: ["ToolkitAll"])
     ],
     
@@ -44,19 +50,27 @@ let package = Package(
         ),
         .target(
             name: "ToolkitUtility",
-            dependencies: ["ToolkitCore"]
+            dependencies: [
+                "ToolkitCore"
+            ]
         ),
         .target(
             name: "ToolkitCrypto",
-            dependencies: ["ToolkitCore"]
+            dependencies: [
+                "ToolkitCore"
+            ]
         ),
         .target(
             name: "ToolkitCompression",
-            dependencies: ["ToolkitCore"]
+            dependencies: [
+                "ToolkitCore"
+            ]
         ),
         .target(
             name: "ToolkitFormatter",
-            dependencies: ["ToolkitCore"]
+            dependencies: [
+                "ToolkitCore"
+            ]
         ),
         
         // MARK: - Service Layer
@@ -89,7 +103,9 @@ let package = Package(
         // MARK: - Plugin Layer
         .target(
             name: "ToolkitPlugins",
-            dependencies: ["ToolkitCore"]
+            dependencies: [
+                "ToolkitCore"
+            ]
         ),
         
         // MARK: - Umbrella Target
