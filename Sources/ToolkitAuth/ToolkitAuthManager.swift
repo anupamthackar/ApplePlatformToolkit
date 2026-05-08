@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import ToolkitCore
 import ToolkitNetworking
 import ToolkitCrypto
@@ -36,7 +37,7 @@ import ToolkitCrypto
  ```
  */
 @MainActor
-open class ToolkitAuthManager: BaseManager, NetworkInterceptor, Sendable {
+open class ToolkitAuthManager: BaseManager, NetworkInterceptor, ObservableObject, Sendable {
 
     // MARK: - Singleton
 
