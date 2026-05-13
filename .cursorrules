@@ -1,0 +1,9 @@
+# Agent Architecture Integration
+
+Before starting any task, you must strictly read and adhere to the guidelines provided in the `AGENTS.md` file located at the root of this repository. 
+
+Also, refer to the `.agent/skills/` directory for specific implementation patterns depending on the role you are adopting for the current task.
+
+1. Always use the specified architecture patterns.
+2. Read the appropriate skill file before modifying complex files.
+3. Adhere to the Component Development Workflow defined in `AGENTS.md`.
