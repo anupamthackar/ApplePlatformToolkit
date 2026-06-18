@@ -1,0 +1,3 @@
+# ToolkitUtility - Implementation Notes
+
+- For clipboard TTL, do not use `DispatchQueue.asyncAfter`. Utilize `Task { try await Task.sleep(...) }` and manage task cancellation if the app enters the background or another copy event occurs.

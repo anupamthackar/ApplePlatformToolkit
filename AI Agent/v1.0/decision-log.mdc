@@ -1,0 +1,22 @@
+# Decision Log - v1.0
+
+## Decision
+1. **Adopt strict Test-Driven Development (TDD) as the core methodology.**
+   - *Reason*: Foundational components like networking interceptors and offline queues are highly complex and stateful. TDD guarantees behavioral constraints.
+   - *Alternatives*: Standard post-implementation testing (leads to untested edge cases).
+   - *Consequences*: Slower initial development speed but exponentially higher stability.
+
+2. **Leverage iOS/macOS SecureEnclave for P256 crypto keys.**
+   - *Reason*: Highest available hardware security for signing payloads.
+   - *Alternatives*: Software-based generic CryptoKit pairs.
+   - *Consequences*: Requires specific OS level APIs and biometric fallback logic.
+
+3. **In-flight request deduplication by URL and Method.**
+   - *Reason*: Heavy SwiftUI usage often triggers redundant views to reload simultaneously. Deduplication prevents server hammering.
+   - *Alternatives*: Manual state tracking in ViewModels.
+   - *Consequences*: Introduces synchronization complexity in `ToolkitNetworking` but drastically reduces latency.
+
+4. **Use typed AsyncStream EventBus instead of NotificationCenter.**
+   - *Reason*: Type safety and structured concurrency integration.
+   - *Alternatives*: `NotificationCenter` (stringly-typed, uses closures).
+   - *Consequences*: Requires subscribing via `for await` loops which is the modern Swift 6 standard.

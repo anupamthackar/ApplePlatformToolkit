@@ -1,0 +1,8 @@
+# ToolkitFormatter - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `Date().tk.relative` returns 'Just now' for a date 5 seconds ago**.
+2. **Test `String.tk.markdown` correctly bolds \*\*text\*\* into an `AttributedString`**.
+3. **Test `String.tk.isE164Phone` correctly rejects '+12345' (too short) and accepts '+15551234567'**.

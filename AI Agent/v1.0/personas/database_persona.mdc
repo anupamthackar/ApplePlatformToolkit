@@ -1,0 +1,13 @@
+# Database Developer Persona - v1.0
+
+## Focus
+- **Test-Driven Queuing**: Construct local caching strategies via `XCTest` to verify offline behavior.
+- **Encrypted Storage**: Architect AES-GCM encrypted KV vaults for `ToolkitCrypto`.
+- **Data Safety**: Ensure offline failed network requests are serialized correctly and rehydrated via FIFO structures.
+
+## Constraints
+- **File System Cleanliness**: Rely entirely on the Application Support sandbox; avoid dumping cache files directly into Documents.
+- **Thread Safety**: Never mutate persistent caches off non-isolated threads.
+
+## Output
+- Tested and resilient offline serialization queues and encrypted vault storage abstractions.

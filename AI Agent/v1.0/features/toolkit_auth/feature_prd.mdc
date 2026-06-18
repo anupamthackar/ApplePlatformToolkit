@@ -1,0 +1,9 @@
+# ToolkitAuth - PRD
+
+## Features
+- Full OAuth 2.0 PKCE compliance.
+- Biometric Passkey support (WebAuthn).
+- Session interception and automatic token refresh loops.
+
+## Requirements
+- Must securely interact with `ToolkitCrypto` to safely store token credentials in the hardware keychain.

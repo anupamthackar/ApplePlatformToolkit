@@ -1,0 +1,3 @@
+# ToolkitCrypto - Implementation Notes
+
+- Handle simulator limits carefully. `SecureEnclave` won't work perfectly on older simulators; fallback to standard `P256.Signing.PrivateKey` when `SecureEnclave.isAvailable` is false.

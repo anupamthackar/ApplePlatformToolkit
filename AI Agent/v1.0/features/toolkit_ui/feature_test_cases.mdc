@@ -1,0 +1,8 @@
+# ToolkitUI - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `ThemeManager` throws an assertion when accessed off the Main Thread**.
+2. **Test `View.redacted(if: true)` properly maps to the Skeleton modifier overlay**.
+3. **Test `CoachMark` calculates correct screen coordinates given an anchored view proxy**.

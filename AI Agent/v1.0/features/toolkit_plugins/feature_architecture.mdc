@@ -1,0 +1,8 @@
+# ToolkitPlugins - Architecture
+
+## Structure
+- `PluginManager` acts as the orchestrator.
+- Protocols define `ToolkitPlugin` which expose `dependencies: [PluginIdentifier]` properties.
+
+## Constraints
+- Initialization runs sequentially based on sort output to guarantee dependency readiness.

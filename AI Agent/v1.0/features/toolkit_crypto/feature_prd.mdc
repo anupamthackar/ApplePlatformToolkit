@@ -1,0 +1,10 @@
+# ToolkitCrypto - PRD
+
+## Features
+- Hardware-bound `SecureEnclave` P256 key generation.
+- AES-GCM local encrypted key-value vault.
+- SHA-256 TLS Certificate Pinning.
+
+## Requirements
+- No secrets can be dumped to disk outside of the Keychain wrapper.
+- All symmetric encryption must leverage authenticated cryptography (GCM/ChaCha).

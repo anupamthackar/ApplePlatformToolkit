@@ -1,0 +1,9 @@
+# ToolkitAuth - Architecture
+
+## Structure
+- Built around the Interceptor pattern bridging into `ToolkitNetworking`.
+- AuthManager handles Safari Web Sessions (`ASWebAuthenticationSession`).
+
+## Constraints
+- Tightly coupled to `ToolkitCrypto` for vault interactions.
+- Cannot mutate network state without going through `ToolkitNetworking`.

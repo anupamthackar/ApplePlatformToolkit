@@ -1,0 +1,4 @@
+# ToolkitNetworking - Implementation Notes
+
+- Be extremely careful with dictionary access in deduplication caches; use `Actor` isolation.
+- Offline queue keys should be hashes of the HTTP request to easily match updates.

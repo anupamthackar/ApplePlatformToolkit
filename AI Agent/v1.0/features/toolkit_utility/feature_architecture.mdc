@@ -1,0 +1,7 @@
+# ToolkitUtility - Architecture
+
+## Structure
+- Pure functional wrappers or distinct managers bridging to `ProcessInfo` or `UIPasteboard`.
+
+## Constraints
+- Do not import `ToolkitUI`. Trigger haptics via structural events rather than View hierarchies.

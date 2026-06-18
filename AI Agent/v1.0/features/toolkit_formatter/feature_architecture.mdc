@@ -1,0 +1,8 @@
+# ToolkitFormatter - Architecture
+
+## Structure
+- Pure Swift functions exposed via `.tk` namespaces on native types (e.g., `Date`, `String`).
+- Leverages Foundation's modern `FormatStyle` API.
+
+## Constraints
+- Stateless design. No singletons keeping formatter caches; use Swift 5.5+ formatting APIs instead of `NumberFormatter` or `DateFormatter` instantiations.

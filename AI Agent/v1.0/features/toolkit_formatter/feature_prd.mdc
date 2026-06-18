@@ -1,0 +1,10 @@
+# ToolkitFormatter - PRD
+
+## Features
+- Markdown to `AttributedString` parser.
+- Relative date/time formatters (e.g., "Just now", "2 mins ago").
+- E.164 Phone number validator and formatter.
+
+## Requirements
+- Locale-aware processing is mandatory.
+- Must execute on background threads to prevent UI stalling when formatting large markdown blocks.

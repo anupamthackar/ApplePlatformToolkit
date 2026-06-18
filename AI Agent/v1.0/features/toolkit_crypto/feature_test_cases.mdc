@@ -1,0 +1,8 @@
+# ToolkitCrypto - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `Vault.store(secret)` encrypts using AES-GCM and cannot be read without the correct derivation key**.
+2. **Test `SecureEnclave` generates a P256 pair successfully on supported hardware**.
+3. **Test `CertificatePinner` rejects an invalid SHA-256 pin during a mock HTTPS handshake**.

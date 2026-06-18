@@ -1,0 +1,9 @@
+# ToolkitUI - Architecture
+
+## Structure
+- High-level ViewModifiers wrapping SwiftUI primitives.
+- `ThemeManager` acts as the single source of truth for dynamic environment values.
+
+## Constraints
+- Runs entirely on `@MainActor`.
+- Should be agnostic to core business logic (should not import Networking or Auth directly).

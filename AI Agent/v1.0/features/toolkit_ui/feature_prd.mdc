@@ -1,0 +1,9 @@
+# ToolkitUI - PRD
+
+## Features
+- Design Token system (`ThemeManager`).
+- Reusable UI abstractions (Skeletons, Custom multi-detent bottom sheets, coach marks).
+
+## Requirements
+- Must integrate perfectly into SwiftUI.
+- No literal colors or hardcoded layout margins are permitted in standard application code; everything must route through `ThemeManager`.

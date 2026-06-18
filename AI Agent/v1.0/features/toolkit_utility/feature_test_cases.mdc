@@ -1,0 +1,8 @@
+# ToolkitUtility - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `ClipboardManager.copy(sensitiveText, ttl: 5)` clears the pasteboard exactly after 5 seconds**.
+2. **Test `AppStoreNudge.shouldPrompt()` correctly returns false if prompted within the last 30 days**.
+3. **Test `ThermalTracker` correctly bridges a `ProcessInfo` notification into an `EventBus` broadcast**.

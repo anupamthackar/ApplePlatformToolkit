@@ -1,0 +1,17 @@
+# Context Build Configuration - v1.0
+
+## Project Boundaries & TDD Requirements
+1. **Test-Driven Development (TDD) Mandatory**: NEVER write implementation code without first writing a failing XCTest case. The sequence must strictly follow: Red -> Green -> Refactor.
+2. **Never commit code**: Commits are handled exclusively by the developer after TDD cycles are verified.
+3. **Never run commands without approval**: Terminal commands require user authorization.
+4. **Ask questions when requirements are unclear**: Stop and ask if PRD details are underspecified.
+5. **Follow architecture strictly**: Abide by the decoupled 4-layer design.
+6. **Follow style guide strictly**: Follow standard Swift 6 conventions.
+
+## Token Optimization (Vibe Coding Protocol)
+1. **Short responses**: Focus on providing the test or the exact implementation logic without verbosity.
+2. **No explanations unless requested**: Rely on code semantics and DocC.
+3. **Return only modified code**: Do not output unchanged methods.
+4. **Avoid unrelated file changes**: Focus on the specific task.
+5. **Avoid unnecessary comments**: Let the test assertions document the intended behavior.
+6. **Ask before large changes**: Wait for permission to alter significant APIs.

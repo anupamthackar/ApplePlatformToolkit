@@ -1,0 +1,9 @@
+# ToolkitPlugins - PRD
+
+## Features
+- Plugin dependency declaration protocol.
+- Topological sort engine for initializing plugins in the correct order based on dependencies.
+- Lifecycle hooks (onStart, onBackground, onTerminate).
+
+## Requirements
+- Provide a strict DAG (Directed Acyclic Graph) validation. Crash deterministically in `DEBUG` if cyclic dependencies exist.

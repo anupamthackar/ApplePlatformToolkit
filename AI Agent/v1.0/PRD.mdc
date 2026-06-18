@@ -1,0 +1,77 @@
+# Product Requirements Document - MyToolkit (v1.0)
+
+## Product Vision
+Provide Apple platform developers with a high-performance, modular SDK (`MyToolkit`) that unifies networking, authentication, cryptography, formatting, and UI styling into a clean 4-layer architecture. This v1.0 foundational framework enables rapid, secure, and highly scalable app development utilizing a Test-Driven Development (TDD) approach.
+
+## Problem Statement
+Building core infrastructure (networking interceptors, biometric secure vaults, DI containers, offline request queues) repeatedly leads to fragmented, unsafe, and untestable code. Developers need a unified, thread-safe (Swift 6), TDD-compatible toolkit.
+
+## Solution Overview
+Introduce the 8 foundational modules of `MyToolkit` v1.0:
+1. **ToolkitCore**: Feature flags, Scoped DI, PII loggers, EventBus bridge.
+2. **ToolkitNetworking**: Offline queues, request deduplication, cache-control, mock transports.
+3. **ToolkitAuth**: OAuth/PKCE, Passkeys, session bounds, auto-refresh interceptors.
+4. **ToolkitCrypto**: Secure Enclave P256 generation, AES-GCM vaults, cert pinning.
+5. **ToolkitUI**: Skeletons, bottom sheets, design tokens, coach marks.
+6. **ToolkitFormatter**: Markdown rendering, smart time, E.164 phone validation, measurements.
+7. **ToolkitUtility**: Thermal tracking, haptics, app store nudge, clipboard TTL.
+8. **ToolkitPlugins**: Typed EventBus, dependency topology sorting.
+
+## Target Audience
+Apple platform developers building enterprise iOS, macOS, iPadOS, watchOS, and visionOS applications using Swift 6.
+
+## User Personas
+- **App Developer**: Wants rapid integration via `.tk` extensions and robust dependency injection.
+- **Security Officer**: Needs guarantees on SecureEnclave hardware separation and PII-redacted logs.
+- **QA Engineer**: Needs isolated `URLProtocol` mocking facilities for clean TDD integration.
+
+## User Stories
+- **US1**: As a developer following TDD, I want a Mock Transport to intercept network requests in XCTest without hitting live servers.
+- **US2**: As a user, I want my data to be protected inside an AES-GCM vault derived from my Face ID.
+- **US3**: As an app developer, I want all components styled using a central `ThemeManager` so that I never write hard-coded colors.
+
+## User Flow
+Standard API consumption flow:
+1. Instantiate module configuration.
+2. Inject into `Toolkit.di` container.
+3. Invoke functions via facade pattern (e.g., `Toolkit.auth.signIn()`, `Toolkit.networking.request()`).
+4. Subscribe to EventBus responses safely using `async let` and `AsyncStream`.
+
+## Functional Requirements
+- **FR1**: Dynamic interceptor pipelines for HTTP traffic.
+- **FR2**: Scoped DI container lifecycles (Session, Screen, Global).
+- **FR3**: Biometric credential creation and assertion (Passkey/WebAuthn).
+- **FR4**: Real-time feature flag configuration polling.
+
+## Non Functional Requirements
+- **NFR1**: Complete Swift 6 Strict Concurrency compliance.
+- **NFR2**: 100% Test Coverage via TDD methodology.
+- **NFR3**: Strict adherence to the 4-layer separation principles.
+
+## API Requirements
+Consistent `.tk` facade namespace for utilities. Use of `async/await` interfaces for all blocking operations.
+
+## Database Requirements
+Ephemeral encrypted storage for `ToolkitCrypto` vaults, and local disk persistence using FileManager for `ToolkitNetworking` offline queue.
+
+## Security Requirements
+Hardware-bound P256 key pairs for signing. OAuth Tokens restricted to Keychain items. Zero logging of PII.
+
+## Edge Cases
+- Network queue replay triggers concurrent UI rebuilds (must deduplicate requests).
+- Multiple plugins depending on each other causing cyclic startup crashes (prevented via topology sort).
+
+## Risks
+Handling background offline replay accurately without leaking expired token sessions.
+
+## Assumptions
+Consumers will utilize Swift Package Manager (SPM).
+
+## Limitations
+Requires iOS 15+ / macOS 12+ for modern `AttributedString` and Concurrency support.
+
+## KPIs
+Refer to the KPI document for concrete metrics.
+
+## Future Enhancements
+(Deferred to v2.0): Background synchronization loops and robust analytics routers.

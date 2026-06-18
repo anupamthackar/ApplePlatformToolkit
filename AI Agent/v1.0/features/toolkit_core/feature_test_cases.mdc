@@ -1,0 +1,8 @@
+# ToolkitCore - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `DIContainer.resolve()` throws error on unregistered dependency**.
+2. **Test `ToolkitLogger.info()` strips `.email` KeyPath entirely from output**.
+3. **Test `EventBus` broadcasts to multiple subscribers simultaneously without race conditions**.

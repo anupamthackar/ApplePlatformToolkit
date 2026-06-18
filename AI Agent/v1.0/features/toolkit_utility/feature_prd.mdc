@@ -1,0 +1,10 @@
+# ToolkitUtility - PRD
+
+## Features
+- Thermal state tracker emitting EventBus broadcasts.
+- Haptics and audio feedback managers.
+- App store review nudger logic.
+- Clipboard expiry manager (auto-clears sensitive strings).
+
+## Requirements
+- Must interact natively with Apple's `Device` APIs cleanly.

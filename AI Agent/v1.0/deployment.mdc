@@ -1,0 +1,20 @@
+# Deployment - v1.0
+
+## Environments
+- **Local TDD Environments**: SwiftPM test configurations running headless and interactive.
+- **CI / GitHub Actions**: Matrix build targeting iOS, macOS, watchOS, and tvOS test suites.
+
+## Build Process
+- **Dynamic Packaging**: MyToolkit v1.0 is built as a modular dynamic framework via `Package.swift`.
+- **Strict Compliance**: Compiler parameters `-strict-concurrency=complete` are non-negotiable.
+
+## CI/CD
+- **Testing**: Actions execute `swift test` across platform simulators ensuring UI skeletons, networking queues, and Auth chains function flawlessly.
+- **Linting**: Enforced via SwiftLint running as a pre-commit check or CI build step.
+
+## Rollback Strategy
+- **Versioning**: Strict SemVer 2.0. Patches only include non-breaking bug fixes.
+- **Deprecation**: Mark APIs with `@available` tags rather than outright deletion.
+
+## Release Strategy
+- **Tags & Releases**: SDK published to GitHub Package Registry and Cocoapods (optional mirror) post CI validation.

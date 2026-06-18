@@ -1,0 +1,8 @@
+# ToolkitNetworking - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `MockURLProtocol` catches traffic that matches its regex**.
+2. **Test 5 simultaneous calls to the same endpoint return exactly the identical reference to the single HTTP Task result (Deduplication)**.
+3. **Test offline request gets successfully serialized to disk, and successfully read from disk upon reboot**.

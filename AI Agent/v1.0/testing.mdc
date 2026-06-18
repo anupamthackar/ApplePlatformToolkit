@@ -1,0 +1,127 @@
+# Testing Strategy - v1.0
+
+## Test-Driven Development (TDD)
+TDD is the primary methodology for v1.0. Every feature must trace back to a defining test case.
+
+## Unit Testing
+- **Network Logic**: Use the internal `URLProtocol` mock transport to simulate 200, 401, and 500 error scenarios without network latency.
+- **Formatting Logic**: Assert markdown styling, phone validation patterns, and relative time limits statically.
+- **Crypto Key Logic**: Assert that generated SecureEnclave keys are non-exportable and sign data correctly.
+
+## Integration Testing
+- **Interceptor Chains**: Verify that a 401 response from the mock transport seamlessly triggers `ToolkitAuth` and replays the original request automatically.
+- **EventBus Topology**: Verify plugins sort and initialize correctly by registering mock plugins with complex dependency chains.
+
+## E2E Testing
+- **Session Lifecycles**: Simulate complete OAuth/PKCE sign-in -> session token capture -> API network fetch -> token expiry -> auto-refresh loop.
+
+## Security Testing
+- **Keychain Isolation**: Attempt unprivileged reads from vault configurations.
+- **PII Leakage**: Trigger logging events containing PII properties and verify that interceptors scrub them entirely.
+
+## Performance Testing
+- **Offline Queues**: Inject 1,000 rapid requests into the offline networking queue and verify that memory does not spike and serialization occurs rapidly.
+
+## Edge Cases
+- Passkey fallback logic when the device lacks SecureEnclave biometrics.
+- Network deduplication when two completely identical requests fire at the exact same microsecond.
+
+## Acceptance Validation
+- [ ] 100% test run success on XCTest framework.
+- [ ] TDD cycles explicitly visible in commit histories.
+
+## Current Test Cases
+
+### ToolkitCoreTests
+- `testDependencyInjection()`
+- `testConfigManager()`
+- `testTaskManager()`
+- `testMetricsManager()`
+- `testErrorHandling()`
+
+### ToolkitNetworkingTests
+- `testBuilder()`
+- `testRequestBuilderSetsURL()`
+- `testRequestBuilderJSONBody()`
+- `testRequestBuilderHeaderInjection()`
+- `testRequestBuilderTimeout()`
+- `testInvalidURLThrows()`
+- `testCircuitBreakerStartsClosed()`
+- `testCircuitBreakerOpensAfterThreshold()`
+- `testCircuitBreakerResetsOnSuccess()`
+- `testNetworkCacheStoreAndRetrieve()`
+- `testNetworkCacheExpiry()`
+- `testNetworkCacheClear()`
+- `testExponentialBackoffDelayIncreases()`
+- `testFixedDelayIsConstant()`
+- `testMockAPIClientSuccess()`
+- `testMockAPIClientThrowsWhenConfigured()`
+- `testAuthInterceptorInjectsToken()`
+- `testDefaultHeadersInterceptor()`
+
+### ToolkitAuthTests
+- `testConfig()`
+- `testAuthenticate()`
+
+### ToolkitCryptoTests
+- `testAESGCMRoundTrip()`
+- `testAESGCMDifferentNoncesProduceDifferentCiphertext()`
+- `testChaChaPolyRoundTrip()`
+- `testMockRoundTrip()`
+- `testDecryptionWithWrongKeyFails()`
+- `testEmptyDataEncryption()`
+- `testFileEncryptionRoundTrip()`
+- `testSHA256Consistency()`
+- `testSHA256KnownValue()`
+- `testSHA384Produces48Bytes()`
+- `testSHA512Produces64Bytes()`
+- `testHashVerification()`
+- `testIncrementalHasher()`
+- `testHashBuilder()`
+- `testHMACSignAndVerify()`
+- `testHMACWrongKeyFails()`
+- `testConstantTimeComparison()`
+- `testHashing()`
+- `testEncryption()`
+
+### ToolkitFormatterTests
+- `testRelativeDateFormattingRecent()`
+- `testISO8601Format()`
+- `testCustomDateFormat()`
+- `testDateParsing()`
+- `testWeekdayName()`
+- `testUSDFormatting()`
+- `testAbbreviatedNumber()`
+- `testPercentageFormatting()`
+- `testTitleCase()`
+- `testSlugGeneration()`
+- `testCamelCase()`
+- `testEmailMasking()`
+- `testPhoneMasking()`
+- `testCreditCardMasking()`
+- `testTruncation()`
+- `testHTMLStripping()`
+- `testBase64RoundTrip()`
+- `testFileSizeFormatting()`
+- `testBinaryFileSizeFormatting()`
+- `testDurationSeconds()`
+- `testUSPhoneFormatting()`
+- `testINPhoneFormatting()`
+- `testStringPipeline()`
+- `testPipelineTruncate()`
+- `testHexEncoding()`
+- `testHexDecoding()`
+
+### ToolkitUITests
+- `testConfig()`
+
+### ToolkitUtilityTests
+- `testManager()`
+
+### ToolkitPluginsTests
+- `testPluginLifecycle()`
+- `testDependencyResolution()`
+- `testEventBus()`
+
+### ToolkitAllTests
+- `testIntegration()`

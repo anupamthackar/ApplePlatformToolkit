@@ -1,0 +1,17 @@
+# Observability - v1.0
+
+## Logs
+- **ToolkitLogger**: Core bridging adapter connecting SDK events to the native `os.Logger`.
+- **Destinations**: Supports multiplexing to Console, File, and remote endpoints.
+
+## Metrics
+- **Performance Budget**: Listen for `ProcessInfo.thermalState` changes (via `ToolkitUtility`) to gauge client load scenarios.
+
+## Tracing
+- **System Events**: Subscribe to app lifecycle state changes automatically pushed to the EventBus.
+
+## Alerts
+- **Development Assertions**: Use `assert()` during local development if illegal states are encountered (e.g., incorrect design token injection, circular plugin graphs).
+
+## Dashboards
+- Telemetry dashboards focus on API error rates intercepted by the network modules.

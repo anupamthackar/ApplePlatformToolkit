@@ -1,0 +1,39 @@
+# Style Guide - v1.0
+
+## Naming Convention
+- **Types (Class/Struct/Enum/Protocol)**: PascalCase (e.g., `ToolkitNetworkingManager`, `ThemeConfig`).
+- **Properties & Methods**: camelCase (e.g., `addInterceptor()`, `signIn()`).
+- **Extensions**: Utility extensions must be explicitly nested inside a `.tk` property wrapper to prevent namespace pollution.
+  - *Correct*: `date.tk.relativeString`
+  - *Incorrect*: `date.relativeString`
+
+## Folder Convention
+Code must be strictly segregated into layered target folders matching SPM specifications:
+```
+Sources/
+├── ToolkitCore/          # Foundational interfaces
+├── ToolkitNetworking/    # URLSession, Offline Queues
+├── ToolkitAuth/          # Passkeys, OAuth
+├── ToolkitCrypto/        # Enclave, AES-GCM
+├── ToolkitUI/            # ViewModifiers, Components
+└── ToolkitPlugins/       # Event streams, sorting
+```
+
+## API Convention
+- **TDD Testability**: All core services must be defined by `protocols` to allow mock implementations (e.g. `NetworkClientProtocol`).
+- **Concurrency**: `async throws` interfaces required for all I/O bound logic.
+- **Thread Safety**: UI elements require `@MainActor`; Service logic requires `Sendable` types.
+
+## Database Convention
+Encrypted vaults use standard camelCase keys. Offline queue caches are serialized to the `Application Support` directory under an isolated `ToolkitNetworking` prefix.
+
+## Error Handling Convention
+- **Typed Errors**: Throw domain-specific `LocalizedError` definitions (e.g., `NetworkError.offlineQueueFull`, `AuthError.sessionInvalid`).
+- **No Force Unwrapping**: Use `guard let` or `if let` extensively. The `!` operator is prohibited outside of XCTest cases.
+
+## Logging Convention
+- **Redaction**: Leverage KeyPath-based log redaction natively supported in `ToolkitLogger`. No PII ever reaches `os.log`.
+- **Levels**: Ensure `.debug`, `.info`, `.warning`, and `.error` are semantically respected.
+
+## Documentation Convention
+- **DocC**: All public APIs must feature DocC documentation blocks explaining parameters, returns, and throwing conditions.

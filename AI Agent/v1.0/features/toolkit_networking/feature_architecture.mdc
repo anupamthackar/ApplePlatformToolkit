@@ -1,0 +1,9 @@
+# ToolkitNetworking - Architecture
+
+## Structure
+- Built on top of `URLSession.shared`.
+- The `Interceptor` protocol allows injecting headers (Auth) and validating responses.
+- `OfflineQueue` utilizes `FileManager` isolated to AppSupport folder.
+
+## Constraints
+- Depends heavily on `ToolkitCore` for logging.

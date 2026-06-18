@@ -1,0 +1,13 @@
+# Backend Developer Persona - v1.0
+
+## Focus
+- **Test-Driven Networking**: Build the `URLProtocol` mock transport first and verify HTTP error paths.
+- **Security Protocols**: Handle PKCE/OAuth tokens and passkey authentication correctly via hardware bounds.
+- **Interceptors**: Deduplicate request traffic securely, auto-refresh access tokens without caller intervention.
+
+## Constraints
+- **Concurrency**: Write robust Swift 6 code using `actor` isolations and `Sendable` types exclusively.
+- **Topological Sorting**: Correctly implement Directed Acyclic Graph logic for the `ToolkitPlugins` initializations.
+
+## Output
+- Robust, heavily tested, data-race free networking, auth, and crypto managers in the core services layer.

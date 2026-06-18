@@ -1,0 +1,4 @@
+# ToolkitCore - Implementation Notes
+
+- Remember to use `Sendable` wrappers on the DI container's internal dictionary lock.
+- Follow `.tk` extension namespace rules.

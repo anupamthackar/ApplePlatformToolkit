@@ -1,0 +1,8 @@
+# ToolkitPlugins - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `PluginManager.sort()` returns plugins A -> B -> C when C depends on B and B depends on A**.
+2. **Test `PluginManager.sort()` throws a CyclicDependencyError when A depends on B and B depends on A**.
+3. **Test all registered plugins receive `onBackground` execution when the app broadcasts standard lifecycle notification**.

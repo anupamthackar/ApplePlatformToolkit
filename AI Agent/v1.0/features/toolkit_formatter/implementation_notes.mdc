@@ -1,0 +1,3 @@
+# ToolkitFormatter - Implementation Notes
+
+- Regex matching for E.164 can be slow. Use Swift's new Regex builder (`Regex { ... }`) for compile-time safety and performance.

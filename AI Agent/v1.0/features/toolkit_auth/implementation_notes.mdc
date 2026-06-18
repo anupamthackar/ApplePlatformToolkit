@@ -1,0 +1,3 @@
+# ToolkitAuth - Implementation Notes
+
+- Handle re-entrancy issues in the refresh loop! Ensure multiple concurrent 401s don't trigger 5 simultaneous refresh requests. Use a `Task` acting as a single async barrier.

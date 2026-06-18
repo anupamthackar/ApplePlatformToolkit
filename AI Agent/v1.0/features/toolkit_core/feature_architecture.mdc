@@ -1,0 +1,9 @@
+# ToolkitCore - Architecture
+
+## Structure
+- `Toolkit.di` exposes registration bindings.
+- `ToolkitLogger` delegates to `os.Logger`.
+- `EventBus` manages weakly held subscriber references using `AsyncStream`.
+
+## Constraints
+- Must not depend on any other Toolkit layer (Networking, Auth, UI).

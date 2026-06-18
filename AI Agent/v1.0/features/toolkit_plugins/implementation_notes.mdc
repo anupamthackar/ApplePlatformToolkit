@@ -1,0 +1,4 @@
+# ToolkitPlugins - Implementation Notes
+
+- Implement Kahn's algorithm or a standard DFS for the topological sort.
+- Ensure the plugin execution hooks wrap the calls in `Task` blocks to prevent a slow plugin from blocking the app lifecycle natively.

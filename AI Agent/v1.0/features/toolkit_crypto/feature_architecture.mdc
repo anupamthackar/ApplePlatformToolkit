@@ -1,0 +1,8 @@
+# ToolkitCrypto - Architecture
+
+## Structure
+- Abstracts Apple's `CryptoKit` and `Security` (Keychain) frameworks.
+- Certificate Pinner provides a URLSessionDelegate to `ToolkitNetworking`.
+
+## Constraints
+- Cannot depend on `ToolkitAuth` or `ToolkitNetworking`. (It sits at the bottom of the service layer).

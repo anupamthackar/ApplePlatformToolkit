@@ -1,0 +1,86 @@
+# System Architecture - v1.0
+
+## System Overview
+`MyToolkit` v1.0 enforces a strict 4-layer separation paradigm designed for extensibility and TDD methodology. Every module is highly decoupled, permitting rapid unit testing using mocked dependencies.
+
+1. **ToolkitCore**: DI containers, Feature Flags, EventBus bridge.
+2. **ToolkitServices**: `ToolkitNetworking`, `ToolkitAuth`, `ToolkitCrypto`.
+3. **ToolkitUI & Formatting**: Design Tokens, Formatters, Skeletons.
+4. **ToolkitPlugins & Utilities**: Typed event streams, device telemetry.
+
+## Component Diagram
+```mermaid
+graph TD
+    subgraph Host Application
+        App[App Logic]
+    end
+
+    subgraph ToolkitUI
+        Theme[ThemeManager]
+        Comps[Bottom Sheets / Skeletons]
+    end
+
+    subgraph ToolkitServices
+        Net[ToolkitNetworking]
+        Auth[ToolkitAuth]
+        Crypto[ToolkitCrypto]
+    end
+
+    subgraph ToolkitCore
+        DI[Dependency Container]
+        Log[ToolkitLogger]
+        Bus[EventBus]
+    end
+
+    App --> Theme
+    App --> Net
+    App --> Auth
+    Net --> Auth
+    Auth --> Crypto
+    Net --> Log
+    Auth --> Log
+    App --> DI
+```
+
+## Data Flow
+### Authenticated Network Flow
+1. App calls `Toolkit.networking.request(...)`.
+2. Interceptor chain triggers.
+3. `ToolkitAuth` interceptor identifies missing/expired tokens.
+4. Interceptor retrieves token from `ToolkitCrypto` secure keychain.
+5. Request is signed, dispatched, and deduplicated.
+6. If offline, serialized to Offline Queue.
+
+## Frontend Architecture
+SwiftUI combined with custom `ViewModifier` patterns to abstract logic away from components. Styling is decoupled into `ThemeManager.shared`.
+
+## Backend Architecture
+Standard URLSession bridging using standard `async/await` paradigms. Network mocks implemented via isolated `URLProtocol` subclasses for TDD.
+
+## Database Architecture
+Local file-system storage utilizing `FileManager` and `Codable` for the offline networking queue and encrypted key-value vaults.
+
+## API Design
+Public interfaces utilize the facade pattern under `Toolkit.*` (e.g., `Toolkit.auth`, `Toolkit.crypto`). Dependencies are registered in `Toolkit.di`.
+
+## Security Design
+- **Key Generation**: `SecureEnclave` P256 generation.
+- **Encryption**: AES-GCM authenticated encryption for KV vaults.
+- **Certificate Pinning**: Automatic host SHA-256 validation interceptors.
+
+## Caching Strategy
+- **HTTP Cache**: Native `URLCache` governed by `Cache-Control` header compliance.
+- **Deduplication**: `Task` signature matching to prevent redundant simultaneous network requests.
+
+## Queue Strategy
+- **Networking Offline Queue**: FIFO disk-based storage enforcing a configurable TTL.
+
+## Deployment Strategy
+Swift Package Manager (SPM). Modular target definitions isolating Core, UI, and Service code correctly.
+
+## Monitoring Strategy
+- **Logging**: `os.Logger` backing `ToolkitLogger`.
+- **Thermal Tracking**: Polling `ProcessInfo.thermalState` triggering degradation broadcasts via EventBus.
+
+## Disaster Recovery
+If keychain corruption occurs, sessions are cleanly invalidated and user forced to perform fresh OAuth/PKCE sign in.

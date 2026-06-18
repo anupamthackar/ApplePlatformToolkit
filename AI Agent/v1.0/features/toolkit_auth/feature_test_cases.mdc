@@ -1,0 +1,8 @@
+# ToolkitAuth - Test Cases
+
+## TDD Mandate
+These tests MUST be written in XCTest BEFORE implementing the feature.
+
+1. **Test `OAuthInterceptor` automatically refreshes an expired token upon receiving a 401**.
+2. **Test `PasskeyManager` returns an assertion error if biometrics are disabled on the simulator**.
+3. **Test Session invalidation purges all keychain data via `ToolkitCrypto`**.

@@ -1,0 +1,11 @@
+# ToolkitCore - PRD
+
+## Features
+- Scoped Dependency Injection Container (Session, Screen, Global).
+- Feature Flag polling and toggles.
+- EventBus core bridge.
+- PII-Redacted Logging via `ToolkitLogger`.
+
+## Requirements
+- Provide a strict `TDD` environment using interface protocols for all components.
+- Logging payload must completely redact specific `KeyPaths`.

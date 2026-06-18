@@ -1,0 +1,4 @@
+# ToolkitUI - Implementation Notes
+
+- Be careful using Environment keys in iOS 15. If a view captures the environment outside the hierarchy, it will crash or fail to update on dark mode toggle.
+- Bottom sheet detent calculations must account for the safe area insets manually for backwards compatibility prior to iOS 16.

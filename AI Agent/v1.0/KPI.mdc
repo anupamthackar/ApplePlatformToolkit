@@ -1,0 +1,48 @@
+# Key Performance Indicators (KPIs) - v1.0
+
+## Functional KPIs
+- **Mock Transport Reliability**: 100% of defined `URLProtocol` mock stubs successfully intercept designated paths during test execution.
+  - *Target*: 100%
+  - *Pass/Fail*: Fail if any live network traffic escapes during TDD test suites.
+- **Plugin Dependency Resolution**: 100% of defined plugins successfully resolve through topological sort without cyclic crashes.
+  - *Target*: 100%
+  - *Pass/Fail*: Fail if cyclic dependency initialization occurs.
+
+## Technical KPIs
+- **Test-Driven Coverage**: The codebase must be generated via TDD resulting in high test coverage.
+  - *Target*: > 90% instruction coverage.
+  - *Pass/Fail*: Fail if coverage drops below 85% or if new features are added without accompanying tests.
+- **Swift 6 Strict Concurrency Compliance**: Zero compiler errors or warnings under strict checking.
+  - *Target*: 0 warnings/errors.
+  - *Pass/Fail*: Fail if any compiler warning is produced in release configuration.
+
+## Performance KPIs
+- **Network Deduplication Optimization**: Simultaneous identical requests should only trigger 1 external HTTP outbound call.
+  - *Target*: 1 HTTP call per batched request signature.
+  - *Pass/Fail*: Fail if identical concurrent `Task` calls result in multiple external requests.
+- **Crypto Key Generation Overhead**: Secure Enclave operations must be performant.
+  - *Target*: < 150ms for P256 generation.
+  - *Pass/Fail*: Fail if UI stutters due to main thread blocking on key generation.
+
+## Reliability KPIs
+- **Offline Request Queue Integrity**: Failed requests accurately serialize to disk and survive application restarts.
+  - *Target*: 100% queue retention.
+  - *Pass/Fail*: Fail if offline queued requests vanish after a forced crash.
+
+## Security KPIs
+- **Vault Encryption Strength**: 100% of encrypted vaults must leverage AES-GCM and refuse plaintext extraction.
+  - *Target*: 100%
+  - *Pass/Fail*: Fail if strings can be extracted from app sandbox without FaceID unlock.
+- **Log PII Redaction**: Logging payload contains 0 instances of marked sensitive KeyPaths.
+  - *Target*: 0 PII leaks.
+  - *Pass/Fail*: Fail if an email, auth token, or device ID appears in OSLog.
+
+## User Experience KPIs
+- **Bottom Sheet Frame Rate**: Custom detent sheets animate at 60fps (or 120fps on ProMotion).
+  - *Target*: Zero frame drops.
+  - *Pass/Fail*: Fail if instruments flag severe hitching during presentation.
+
+## Acceptance Criteria
+- [ ] Comprehensive TDD test suite passes completely.
+- [ ] Code compiles without warnings using `swift build -c release -Xswiftc -strict-concurrency=complete`.
+- [ ] Security static analysis passes clean.

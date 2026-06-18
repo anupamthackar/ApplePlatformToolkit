@@ -1,0 +1,11 @@
+# ToolkitNetworking - PRD
+
+## Features
+- Offline URL request serialization queues.
+- `URLProtocol` mocking infrastructure for headless TDD.
+- Request deduplication.
+- Dynamic request interceptor pipelines.
+
+## Requirements
+- Must integrate tightly with TDD workflows to prevent real network calls.
+- In-flight simultaneous requests with identical URL/Body/Headers must only trigger 1 external `URLSessionDataTask`.
