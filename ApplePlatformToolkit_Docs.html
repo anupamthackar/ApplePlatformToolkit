@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple Platform Toolkit — Feature Docs</title>
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --bg2: #141416;
+    --bg3: #1c1c1f;
+    --bg4: #232327;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f2;
+    --text2: #a0a0a8;
+    --text3: #606068;
+    --accent: #6B5FE4;
+    --accent2: #8B7FF4;
+    --accent-bg: rgba(107,95,228,0.12);
+    --green: #1D9E75;
+    --green-bg: rgba(29,158,117,0.12);
+    --amber: #BA7517;
+    --amber-bg: rgba(186,117,23,0.12);
+    --coral: #D85A30;
+    --coral-bg: rgba(216,90,48,0.12);
+    --blue: #378ADD;
+    --blue-bg: rgba(55,138,221,0.12);
+    --pink: #D4537E;
+    --pink-bg: rgba(212,83,126,0.12);
+    --teal: #1D9E75;
+    --teal-bg: rgba(29,158,117,0.12);
+    --mono: 'SF Mono', 'Fira Code', monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.65; }
+
+  /* Layout */
+  .shell { display: flex; min-height: 100vh; }
+  .sidebar { width: 260px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; padding: 0 0 2rem; }
+  .main { margin-left: 260px; flex: 1; max-width: 860px; padding: 0 2.5rem 6rem; }
+
+  /* Sidebar */
+  .sidebar-header { padding: 1.5rem 1.25rem 1rem; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { display: flex; align-items: center; gap: 10px; margin-bottom: .25rem; }
+  .sidebar-logo-icon { width: 28px; height: 28px; background: var(--accent); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+  .sidebar-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .sidebar-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .nav-group { padding: .75rem 1rem .25rem; }
+  .nav-group-label { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); padding: 0 .25rem; margin-bottom: .4rem; }
+  .nav-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); font-size: 12.5px; color: var(--text2); cursor: pointer; transition: background .15s, color .15s; text-decoration: none; }
+  .nav-item:hover { background: var(--bg4); color: var(--text); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent2); }
+  .nav-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Hero */
+  .hero { padding: 4rem 0 3rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+  .hero-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent2); margin-bottom: 1rem; }
+  .hero-title { font-size: 38px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 1rem; }
+  .hero-title span { color: var(--accent2); }
+  .hero-desc { font-size: 16px; color: var(--text2); max-width: 540px; line-height: 1.7; margin-bottom: 2rem; }
+  .hero-stats { display: flex; gap: 2rem; }
+  .stat { }
+  .stat-num { font-size: 24px; font-weight: 700; color: var(--text); }
+  .stat-label { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+  /* Module section */
+  .module-section { margin-bottom: 4rem; scroll-margin-top: 2rem; }
+  .module-header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.75rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+  .module-icon { width: 38px; height: 38px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .module-meta { }
+  .module-name { font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+  .module-desc { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; letter-spacing: .04em; text-transform: uppercase; margin-left: 8px; vertical-align: middle; }
+  .badge-new { background: var(--accent-bg); color: var(--accent2); }
+  .badge-ext { background: var(--green-bg); color: #5DCAA5; }
+  .badge-perf { background: var(--amber-bg); color: #EF9F27; }
+
+  /* Feature card */
+  .feature { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .feature:hover { border-color: var(--border2); }
+  .feature-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+  .feature-num { font-size: 11px; font-weight: 600; color: var(--text3); font-family: var(--mono); margin-bottom: .25rem; }
+  .feature-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .feature-body { font-size: 14px; color: var(--text2); line-height: 1.65; margin-bottom: 1.25rem; }
+  .feature-divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+  /* API block */
+  .api-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text3); margin-bottom: .6rem; }
+  pre { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1.1rem 1.25rem; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #c9c9d4; }
+  .kw { color: #B294FF; }
+  .fn { color: #8BE9FD; }
+  .str { color: #A8FF78; }
+  .cm { color: #555566; font-style: italic; }
+  .type { color: #FFB86C; }
+  .prop { color: #F8F8F2; }
+
+  /* Pills row */
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+  .pill { font-size: 11px; color: var(--text3); background: var(--bg4); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; }
+
+  /* New module callout */
+  .new-module-callout { background: var(--accent-bg); border: 1px solid rgba(107,95,228,0.25); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { font-size: 16px; margin-top: 1px; }
+  .callout-text { font-size: 13px; color: var(--accent2); line-height: 1.6; }
+  .callout-text strong { color: #c5bfff; }
+
+  /* Section spacer */
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 1.25rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 4px; }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 0 1.25rem 4rem; }
+    .hero-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🍎</div>
+      <div>
+        <div class="sidebar-title">Platform Toolkit</div>
+        <div class="sidebar-sub">Feature Docs v2.0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a class="nav-item" href="#overview"><div class="nav-dot" style="background:#6B5FE4"></div>Introduction</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Core</div>
+    <a class="nav-item" href="#toolkitcore"><div class="nav-dot" style="background:#6B5FE4"></div>ToolkitCore</a>
+    <a class="nav-item" href="#toolkitnetworking"><div class="nav-dot" style="background:#378ADD"></div>ToolkitNetworking</a>
+    <a class="nav-item" href="#toolkitauth"><div class="nav-dot" style="background:#D4537E"></div>ToolkitAuth</a>
+    <a class="nav-item" href="#toolkitcrypto"><div class="nav-dot" style="background:#1D9E75"></div>ToolkitCrypto</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">UI & Formatting</div>
+    <a class="nav-item" href="#toolkitui"><div class="nav-dot" style="background:#BA7517"></div>ToolkitUI</a>
+    <a class="nav-item" href="#toolkitformatter"><div class="nav-dot" style="background:#3B6D11"></div>ToolkitFormatter</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">System & Plugins</div>
+    <a class="nav-item" href="#toolkitutility"><div class="nav-dot" style="background:#D85A30"></div>ToolkitUtility</a>
+    <a class="nav-item" href="#toolkitplugins"><div class="nav-dot" style="background:#6B5FE4"></div>ToolkitPlugins</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">New Modules</div>
+    <a class="nav-item" href="#toolkitsync"><div class="nav-dot" style="background:#1D9E75"></div>ToolkitSync ✦</a>
+    <a class="nav-item" href="#toolkitanalytics"><div class="nav-dot" style="background:#BA7517"></div>ToolkitAnalytics ✦</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero" id="overview">
+    <div class="hero-eyebrow">Apple Platform Toolkit — Addon Features</div>
+    <h1 class="hero-title">37 features.<br><span>Built for production.</span></h1>
+    <p class="hero-desc">New capabilities proposed for each module, designed around frameworks already in the toolkit's stack. Every feature compiles against existing APIs — no new mandatory dependencies.</p>
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">37</div><div class="stat-label">Features</div></div>
+      <div class="stat"><div class="stat-num">9</div><div class="stat-label">Modules</div></div>
+      <div class="stat"><div class="stat-num">2</div><div class="stat-label">New modules</div></div>
+    </div>
+  </section>
+
+  <!-- TOOLKITCORE -->
+  <section class="module-section" id="toolkitcore">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(107,95,228,0.15); color:#8B7FF4; font-size:16px;">⚙️</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitCore</div>
+        <div class="module-desc">Foundation · Dependency Injection · Logging · Task management</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">01</div><div class="feature-title">Feature flags <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Local <code>plist</code> + remote JSON polling with Swift's <code>@Observable</code> macro so any SwiftUI view that reads a flag automatically re-renders when it changes. Flags are defined as a host-app <code>enum</code> — no stringly-typed keys, full autocomplete.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// 1. Define flags in your app target</span>
+<span class="kw">extension</span> <span class="type">ToolkitFlag</span> {
+    <span class="kw">static let</span> <span class="prop">newCheckout</span>   = <span class="type">ToolkitFlag</span>(<span class="str">"new_checkout"</span>)
+    <span class="kw">static let</span> <span class="prop">darkModeV2</span>    = <span class="type">ToolkitFlag</span>(<span class="str">"dark_mode_v2"</span>)
+}
+
+<span class="cm">// 2. Configure once at startup</span>
+<span class="type">Toolkit</span>.flags.<span class="fn">configure</span>(
+    remote: <span class="type">URL</span>(string: <span class="str">"https://flags.myapp.com/v1.json"</span>)!,
+    local: <span class="str">"FeatureFlags"</span>,          <span class="cm">// plist in bundle</span>
+    refreshInterval: <span class="prop">300</span>            <span class="cm">// seconds</span>
+)
+
+<span class="cm">// 3. Read anywhere — SwiftUI auto-observes</span>
+<span class="kw">if</span> <span class="type">Toolkit</span>.flags.<span class="fn">isEnabled</span>(.<span class="prop">newCheckout</span>) {
+    <span class="fn">showNewCheckout</span>()
+}</pre>
+      <div class="pills">
+        <span class="pill">@Observable</span><span class="pill">SwiftUI reactive</span><span class="pill">remote polling</span><span class="pill">kill-switch support</span>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">02</div><div class="feature-title">Scoped DI containers <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Child containers that inherit parent registrations but can override locally. Each scope is tied to a lifetime — user session, feature module, or screen — and deallocates all its registrations when closed. Multi-scene and modular app architectures need this.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">sessionScope</span> = <span class="type">Toolkit</span>.di.<span class="fn">createScope</span>(id: <span class="str">"userSession"</span>)
+sessionScope.<span class="fn">register</span>(<span class="type">UserRepository</span>.<span class="kw">self</span>) {
+    <span class="type">SessionUserRepository</span>(token: token)
+}
+
+<span class="cm">// Teardown: all session-scoped objects deallocated</span>
+sessionScope.<span class="fn">close</span>()</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">03</div><div class="feature-title">PII-redacting logger destinations <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Route the existing logger into <code>os.Logger</code>, a rolling file store, or a remote endpoint. PII redaction is declared via <code>KeyPath</code> — no regex, no manual scrubbing per call site.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">ToolkitLogger</span>.<span class="fn">configure</span>(
+    level: .<span class="prop">warning</span>,
+    destinations: [.<span class="prop">osLog</span>, .<span class="fn">file</span>(<span class="str">"toolkit.log"</span>), .<span class="fn">remote</span>(url: logsURL)],
+    redacting: [\.<span class="prop">userEmail</span>, \.<span class="prop">authToken</span>, \.<span class="prop">deviceId</span>]
+)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">04</div><div class="feature-title">App lifecycle EventBus bridge <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Auto-publish <code>UIApplication</code> lifecycle events — foreground, background, memory warning, significant time change — into the existing <code>EventBus</code>. Modules can subscribe without importing UIKit.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">for await</span> _ <span class="kw">in</span> <span class="type">Toolkit</span>.events.<span class="fn">stream</span>(of: <span class="type">AppDidEnterBackgroundEvent</span>.<span class="kw">self</span>) {
+    <span class="kw">await</span> <span class="fn">pauseHeavyWork</span>()
+}</pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITNETWORKING -->
+  <section class="module-section" id="toolkitnetworking">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(55,138,221,0.15); color:#85B7EB; font-size:16px;">🌐</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitNetworking</div>
+        <div class="module-desc">Interceptors · Circuit breakers · Auto-retry · URLSession</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">05</div><div class="feature-title">Offline request queue <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Persist failed requests to disk via <code>Codable</code> + <code>FileManager</code>. When <code>ToolkitUtility</code>'s connectivity monitor fires a reconnect event, the queue replays in FIFO order, refreshing tokens via <code>ToolkitAuth</code> if needed. Entries expire after a configurable TTL.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">var</span> <span class="prop">req</span> = <span class="type">NetworkRequest</span>(endpoint: .<span class="prop">submitFeedback</span>, body: feedback)
+req.offlinePolicy = .<span class="fn">queue</span>(priority: .<span class="prop">normal</span>, ttl: <span class="prop">3600</span>)
+
+<span class="cm">// Returns immediately — request queued if offline</span>
+<span class="kw">try await</span> <span class="type">Toolkit</span>.networking.<span class="fn">send</span>(req)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">06</div><div class="feature-title">In-flight request deduplication <span class="badge badge-perf">perf</span></div></div>
+      </div>
+      <div class="feature-body">Coalesce identical concurrent requests (same URL + HTTP method) into one real network call. All callers awaiting the same request receive the same response from a single <code>AsyncStream</code> continuation — ideal for profile images, config fetches, and shared data.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">config</span> = <span class="type">NetworkConfig</span>()
+config.deduplicationStrategy = .<span class="prop">byURLAndMethod</span>
+<span class="type">Toolkit</span>.networking.<span class="fn">configure</span>(config)
+
+<span class="cm">// Both fire simultaneously — only one HTTP call made</span>
+<span class="kw">async let</span> <span class="prop">a</span> = <span class="type">Toolkit</span>.networking.<span class="fn">request</span>(profileURL)
+<span class="kw">async let</span> <span class="prop">b</span> = <span class="type">Toolkit</span>.networking.<span class="fn">request</span>(profileURL)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">07</div><div class="feature-title">Cache-control awareness <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Honour <code>Cache-Control</code>, <code>ETag</code>, and <code>Last-Modified</code> response headers automatically. Back the cache store with <code>URLCache</code> with configurable memory and disk limits per request type.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">var</span> <span class="prop">req</span> = <span class="type">NetworkRequest</span>(endpoint: .<span class="prop">productCatalog</span>)
+req.cachePolicy = .<span class="prop">respectServer</span>    <span class="cm">// .forceCache(ttl: 300) | .noCache</span>
+<span class="kw">let</span> <span class="prop">products</span> = <span class="kw">try await</span> <span class="type">Toolkit</span>.networking.<span class="fn">request</span>(req, as: [<span class="type">Product</span>].<span class="kw">self</span>)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">08</div><div class="feature-title">Mock transport for testing <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">A <code>URLProtocol</code> subclass that intercepts requests and returns fixture responses in <code>XCTest</code>. Register per test case — no global state pollution, no live server required. Supports simulating network errors and latency.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// In XCTestCase.setUp()</span>
+<span class="type">Toolkit</span>.networking.<span class="fn">useMockTransport</span> { request <span class="kw">in</span>
+    <span class="kw">switch</span> request.endpoint {
+    <span class="kw">case</span> .<span class="prop">login</span>:
+        <span class="kw">return</span> .<span class="fn">success</span>(<span class="type">Fixtures</span>.loginResponse, statusCode: <span class="prop">200</span>)
+    <span class="kw">case</span> .<span class="prop">profile</span>:
+        <span class="kw">return</span> .<span class="fn">failure</span>(.<span class="fn">serverError</span>(<span class="prop">503</span>))
+    }
+}</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">09</div><div class="feature-title">Upload progress + pause/resume <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Wrap <code>URLSessionUploadTask</code> with an <code>AsyncStream</code> publisher exposing byte-level progress, pause, and resume controls. Resumable via <code>URLSessionConfiguration.background</code> for large files.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">upload</span> = <span class="type">Toolkit</span>.networking.<span class="fn">upload</span>(file: videoURL, to: .<span class="prop">uploadVideo</span>)
+
+<span class="kw">for await</span> progress <span class="kw">in</span> upload.progressStream {
+    progressBar.<span class="fn">update</span>(progress.fractionCompleted)
+}
+
+upload.<span class="fn">pause</span>()
+upload.<span class="fn">resume</span>()</pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITAUTH -->
+  <section class="module-section" id="toolkitauth">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(212,83,126,0.15); color:#ED93B1; font-size:16px;">🔐</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitAuth</div>
+        <div class="module-desc">Biometrics · Keychain · Session lifecycle</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">10</div><div class="feature-title">OAuth 2.0 / PKCE flow <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Full browser-based sign-in via <code>ASWebAuthenticationSession</code>. The PKCE code verifier and challenge are generated by existing <code>ToolkitCrypto</code> primitives. Tokens are stored in the existing Keychain layer. Expiry-based auto-refresh hooks into the <code>ToolkitNetworking</code> interceptor chain.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">provider</span> = <span class="type">OAuthProvider</span>(
+    clientId: <span class="str">"com.myapp.client"</span>,
+    authURL: <span class="str">"https://provider.com/auth"</span>,
+    tokenURL: <span class="str">"https://provider.com/token"</span>,
+    scopes: [<span class="str">"openid"</span>, <span class="str">"email"</span>, <span class="str">"profile"</span>]
+)
+
+<span class="kw">let</span> <span class="prop">tokens</span> = <span class="kw">try await</span> <span class="type">Toolkit</span>.auth.<span class="fn">signIn</span>(with: provider)
+<span class="cm">// Tokens auto-stored in Keychain, auto-refreshed on expiry</span></pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">11</div><div class="feature-title">Passkey (WebAuthn) support <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Wrap Apple's <code>AuthenticationServices</code> passkey APIs for one-call registration and assertion. Falls back gracefully to Face ID / Touch ID when no passkey is enrolled. Private key material never leaves the Secure Enclave.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// Registration (new device)</span>
+<span class="kw">let</span> <span class="prop">credential</span> = <span class="kw">try await</span> <span class="type">Toolkit</span>.auth.<span class="fn">registerPasskey</span>(
+    username: user.email,
+    relyingParty: <span class="str">"myapp.com"</span>
+)
+
+<span class="cm">// Sign-in</span>
+<span class="kw">let</span> <span class="prop">assertion</span> = <span class="kw">try await</span> <span class="type">Toolkit</span>.auth.<span class="fn">authenticateWithPasskey</span>(
+    relyingParty: <span class="str">"myapp.com"</span>
+)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">12</div><div class="feature-title">Session anomaly detection <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Bind sessions to a device fingerprint sourced from <code>ToolkitUtility</code>. Detect and act on device-mismatch, token reuse, or concurrent session limit — broadcast anomalies as typed <code>EventBus</code> events so any module can react.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.auth.sessionPolicy = <span class="type">SessionPolicy</span>(
+    bindToDevice: <span class="kw">true</span>,
+    maxConcurrentSessions: <span class="prop">3</span>,
+    onAnomaly: { anomaly <span class="kw">in</span>
+        <span class="cm">// .deviceMismatch | .tokenReuse | .concurrentLimitExceeded</span>
+        <span class="kw">await</span> <span class="type">Toolkit</span>.auth.<span class="fn">invalidateAllSessions</span>()
+    }
+)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">13</div><div class="feature-title">Auto token refresh interceptor <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Detect 401 responses in the networking interceptor chain, silently refresh the access token using the stored refresh token, then replay the original request. Zero changes needed at call sites. Queues concurrent requests during the refresh window.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// Enable once — all requests benefit automatically</span>
+<span class="type">Toolkit</span>.auth.<span class="fn">enableAutoRefreshInterceptor</span>(
+    onRefreshFailed: { <span class="type">Toolkit</span>.auth.<span class="fn">signOut</span>() }
+)</pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITCRYPTO -->
+  <section class="module-section" id="toolkitcrypto">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(29,158,117,0.15); color:#5DCAA5; font-size:16px;">🔒</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitCrypto</div>
+        <div class="module-desc">AES-GCM · ChaChaPoly · Key management · CryptoKit</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">14</div><div class="feature-title">Secure Enclave key generation <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Generate <code>P256</code> key pairs where the private key is hardware-bound and never exported. Biometric access control enforced via <code>SecAccessControl</code>. Public key is exported as <code>Data</code> for server-side verification.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">keyPair</span> = <span class="kw">try</span> <span class="type">Toolkit</span>.crypto.<span class="fn">generateSecureEnclaveKey</span>(
+    tag: <span class="str">"com.myapp.signing"</span>,
+    access: .<span class="prop">biometryCurrentSet</span>
+)
+
+<span class="kw">let</span> <span class="prop">sig</span>   = <span class="kw">try</span> <span class="type">Toolkit</span>.crypto.<span class="fn">sign</span>(data: payload, with: keyPair.privateKey)
+<span class="kw">let</span> <span class="prop">valid</span> = <span class="kw">try</span> <span class="type">Toolkit</span>.crypto.<span class="fn">verify</span>(sig, data: payload, key: keyPair.publicKey)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">15</div><div class="feature-title">Encrypted key-value vault <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">A structured encrypted store where each value is AES-GCM encrypted with a per-vault key derived from the user's biometric. Built entirely on existing <code>ToolkitCrypto</code> abstractions — no third-party dependency. Survives app restart; vault locked on screen lock.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">vault</span> = <span class="kw">try</span> <span class="type">Toolkit</span>.crypto.<span class="fn">openVault</span>(name: <span class="str">"userSecrets"</span>, unlock: .<span class="prop">biometry</span>)
+
+<span class="kw">try</span> vault.<span class="fn">set</span>(creditCard, forKey: <span class="str">"primaryCard"</span>)
+<span class="kw">let</span> <span class="prop">card</span>: <span class="type">CreditCard</span> = <span class="kw">try</span> vault.<span class="fn">get</span>(forKey: <span class="str">"primaryCard"</span>)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">16</div><div class="feature-title">Certificate pinning helper <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">SHA-256 pin validation in a <code>URLSessionDelegate</code> shim. Plug directly into <code>ToolkitNetworking</code>'s existing session configuration — no changes to request call sites.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.crypto.pinnedCertificates = [
+    <span class="type">PinnedCertificate</span>(host: <span class="str">"api.myapp.com"</span>, sha256: <span class="str">"base64hash=="</span>),
+    <span class="type">PinnedCertificate</span>(host: <span class="str">"cdn.myapp.com"</span>, sha256: <span class="str">"base64hash2="</span>)
+]
+<span class="cm">// Automatically enforced on all ToolkitNetworking requests</span></pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITUI -->
+  <section class="module-section" id="toolkitui">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(186,117,23,0.15); color:#EF9F27; font-size:16px;">🎨</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitUI</div>
+        <div class="module-desc">ThemeConfig · Components · HUD · Toast notifications</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">17</div><div class="feature-title">Skeleton loading modifier <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">A <code>ViewModifier</code> that overlays shimmer-animated placeholder rectangles matching the live geometry of any view. No changes needed to existing components — apply as a one-liner. Shimmer respects <code>prefers-reduced-motion</code> / Accessibility settings.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// SwiftUI — works on any view</span>
+<span class="type">ProductCardView</span>(product: product)
+    .<span class="fn">toolkitSkeleton</span>(isLoading: viewModel.isLoading)
+
+<span class="cm">// Skeleton auto-matches the card's real layout</span></pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">18</div><div class="feature-title">Bottom sheet / drawer <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Gesture-driven, multi-detent bottom sheet using <code>UISheetPresentationController</code> on iOS 16+ with a fully custom implementation as fallback. Bridged to SwiftUI via a <code>ViewModifier</code>. Exposes <code>onDetentChanged</code> and <code>onDismiss</code> callbacks.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// SwiftUI</span>
+<span class="type">ContentView</span>()
+    .<span class="fn">toolkitBottomSheet</span>(isPresented: $showFilters, detents: [.<span class="prop">medium</span>, .<span class="prop">large</span>]) {
+        <span class="type">FilterPanelView</span>()
+    }
+
+<span class="cm">// UIKit</span>
+<span class="kw">let</span> <span class="prop">sheet</span> = <span class="type">ToolkitBottomSheet</span>(content: filterVC, detents: [.<span class="prop">medium</span>, .<span class="prop">large</span>])
+<span class="fn">present</span>(sheet, animated: <span class="kw">true</span>)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">19</div><div class="feature-title">Design token system <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Extend existing <code>ThemeConfig</code> into a full token system covering spacing grid, type scale, motion spring curves, and elevation levels. All existing components consume tokens instead of hard-coded values — one <code>ThemeConfig</code> change reshapes the entire app.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">var</span> <span class="prop">theme</span> = <span class="type">ThemeConfig</span>()
+theme.tokens = <span class="type">DesignTokens</span>(
+    spacing:   .<span class="fn">grid</span>(base: <span class="prop">4</span>),
+    typography: .<span class="fn">scale</span>(base: <span class="prop">16</span>, ratio: <span class="prop">1.25</span>),
+    motion:    .<span class="fn">spring</span>(response: <span class="prop">0.35</span>, damping: <span class="prop">0.85</span>),
+    elevation: [.<span class="prop">card</span>: <span class="prop">2</span>, .<span class="prop">modal</span>: <span class="prop">8</span>, .<span class="prop">overlay</span>: <span class="prop">16</span>]
+)
+<span class="type">ThemeManager</span>.shared.<span class="fn">apply</span>(theme)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">20</div><div class="feature-title">Onboarding coach marks <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Sequence-aware spotlight overlays that highlight any anchored view. Steps are managed as a named flow stored in <code>UserDefaults</code> so they only show once. Dismisses via tap, swipe, or programmatically.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.ui.<span class="fn">coachMark</span>(
+    target: profileButtonAnchor,
+    title: <span class="str">"Your profile"</span>,
+    body: <span class="str">"Tap here to edit your details."</span>,
+    sequence: <span class="str">"onboarding"</span>,
+    step: <span class="prop">1</span>
+)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">21</div><div class="feature-title">Accessibility audit overlay <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Debug-only in-app overlay (activated by shake gesture or dev menu) that highlights contrast failures, missing <code>accessibilityLabel</code>s, and touch targets below 44×44 pt. Uses <code>UIAccessibility</code> APIs — zero impact on release builds.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="prop">#if</span> DEBUG
+<span class="type">Toolkit</span>.ui.<span class="fn">enableAccessibilityAudit</span>(
+    checks: [.<span class="prop">contrastRatio</span>, .<span class="prop">minimumTouchTarget</span>, .<span class="prop">missingLabel</span>],
+    overlay: .<span class="prop">highlight</span>    <span class="cm">// or .log | .assert</span>
+)
+<span class="prop">#endif</span></pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITFORMATTER -->
+  <section class="module-section" id="toolkitformatter">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(59,109,17,0.2); color:#97C459; font-size:16px;">✏️</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitFormatter</div>
+        <div class="module-desc">Dates · Currencies · String transformations</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">22</div><div class="feature-title">Markdown → AttributedString renderer <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Parse CommonMark subset using Swift's built-in <code>AttributedString(markdown:)</code>. Style overrides (font, link colour, code background) are exposed through the existing formatting pipeline. Output works directly in SwiftUI <code>Text</code> and <code>UILabel</code>.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">attributed</span> = <span class="type">Toolkit</span>.formatter.<span class="fn">markdown</span>(
+    <span class="str">"**Hello** _world_ — tap [here](https://myapp.com)"</span>,
+    style: <span class="type">MarkdownStyle</span>(font: .<span class="prop">body</span>, linkColor: .<span class="prop">accentColor</span>)
+)
+<span class="type">Text</span>(attributed)    <span class="cm">// SwiftUI</span></pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">23</div><div class="feature-title">Smart relative time <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Context-aware relative time strings: "just now", "2 hours ago", "last Monday", "3 Jan". Uses <code>RelativeDateTimeFormatter</code> and <code>DateComponentsFormatter</code> with configurable verbosity thresholds — use <code>.compact</code> for cells, <code>.full</code> for detail views.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">label</span> = <span class="type">Toolkit</span>.formatter.<span class="fn">relativeTime</span>(
+    from: post.createdAt,
+    style: .<span class="prop">smart</span>,
+    verbosity: .<span class="prop">compact</span>
+)
+<span class="cm">// "2h ago"  |  "Yesterday"  |  "3 Jan"</span></pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">24</div><div class="feature-title">Phone number formatting + validation <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Locale-aware E.164 formatting and region-specific validation using <code>CNPhoneNumber</code> heuristics. No external dependency. Supports national and international formats, and live input formatting as the user types.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">formatted</span> = <span class="type">Toolkit</span>.formatter.<span class="fn">phoneNumber</span>(<span class="str">"+919876543210"</span>, locale: .<span class="prop">current</span>)
+<span class="cm">// → "+91 98765 43210"</span>
+
+<span class="kw">let</span> <span class="prop">isValid</span> = <span class="type">Toolkit</span>.formatter.<span class="fn">isValidPhoneNumber</span>(<span class="str">"+919876543210"</span>, region: <span class="str">"IN"</span>)</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">25</div><div class="feature-title">Measurement unit conversion <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Type-safe unit conversion using Swift's <code>Measurement&lt;UnitType&gt;</code> and <code>MeasurementFormatter</code>. Locale-correct output — automatically uses metric or imperial based on the device's region setting.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">let</span> <span class="prop">dist</span> = <span class="type">Measurement</span>(value: <span class="prop">26.2</span>, unit: <span class="type">UnitLength</span>.miles)
+<span class="kw">let</span> <span class="prop">label</span> = <span class="type">Toolkit</span>.formatter.<span class="fn">measurement</span>(dist, convertedTo: .<span class="prop">kilometers</span>)
+<span class="cm">// → "42.16 km"</span></pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITUTILITY -->
+  <section class="module-section" id="toolkitutility">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(216,90,48,0.15); color:#F0997B; font-size:16px;">📱</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitUtility</div>
+        <div class="module-desc">Hardware · Connectivity · Device info</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">26</div><div class="feature-title">Thermal + performance budget manager <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Observe <code>ProcessInfo.thermalState</code> changes and emit tiered budget events — <code>.ample</code>, <code>.reduced</code>, <code>.minimal</code> — via the existing <code>EventBus</code>. Modules subscribe and gracefully degrade: disable heavy animations, pause background work, reduce frame rate.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.utility.performanceBudget.<span class="fn">onStateChange</span> { budget <span class="kw">in</span>
+    <span class="kw">switch</span> budget {
+    <span class="kw">case</span> .<span class="prop">ample</span>:    <span class="fn">enableHighQualityRendering</span>()
+    <span class="kw">case</span> .<span class="prop">reduced</span>:  <span class="fn">disableHeavyAnimations</span>()
+    <span class="kw">case</span> .<span class="prop">minimal</span>:  <span class="fn">pauseBackgroundTasks</span>()
+    }
+}</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">27</div><div class="feature-title">Haptic feedback manager <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Typed, one-call wrapper over <code>UIImpactFeedbackGenerator</code>, <code>UINotificationFeedbackGenerator</code>, and <code>CoreHaptics</code> for custom AHAP patterns. Silently no-ops on devices without a Taptic Engine.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.utility.haptics.<span class="fn">trigger</span>(.<span class="prop">success</span>)
+<span class="type">Toolkit</span>.utility.haptics.<span class="fn">trigger</span>(.<span class="fn">impact</span>(.<span class="prop">heavy</span>))
+<span class="type">Toolkit</span>.utility.haptics.<span class="fn">trigger</span>(.<span class="fn">custom</span>(sharpness: <span class="prop">0.8</span>, intensity: <span class="prop">0.6</span>))</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">28</div><div class="feature-title">App Store update nudge <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Poll the iTunes Lookup API via <code>ToolkitNetworking</code>. Compare the response against the app's <code>CFBundleShortVersionString</code>. Surface update prompts via the existing <code>ToolkitUI</code> toast or HUD — no custom UI code required.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.utility.<span class="fn">checkForUpdate</span>(appId: <span class="str">"123456789"</span>) { result <span class="kw">in</span>
+    <span class="kw">if case</span> .<span class="fn">updateAvailable</span>(<span class="kw">let</span> <span class="prop">version</span>) = result {
+        <span class="type">Toolkit</span>.ui.<span class="fn">showUpdateBanner</span>(availableVersion: version)
+    }
+}</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">29</div><div class="feature-title">Clipboard expiry <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Write sensitive content to <code>UIPasteboard</code> with a TTL. A <code>Task.sleep</code> fires after the interval and clears the pasteboard. Essential for OTP codes and auth tokens that shouldn't linger.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// Auto-clears from clipboard after 30 seconds</span>
+<span class="type">Toolkit</span>.utility.clipboard.<span class="fn">set</span>(<span class="str">"OTP: 482910"</span>, expiresIn: <span class="prop">30</span>)</pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITPLUGINS -->
+  <section class="module-section" id="toolkitplugins">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(107,95,228,0.15); color:#AFA9EC; font-size:16px;">🔌</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitPlugins</div>
+        <div class="module-desc">EventBus · Plugin registry · Extensibility layer</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">30</div><div class="feature-title">Typed async EventBus <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Replace stringly-typed event names with Swift's <code>any Sendable</code> + protocol witness table. Subscriptions become <code>AsyncStream</code>-based <code>for await</code> loops — fully structured-concurrency-compatible, no callback registration/deregistration.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// Define — compile-time safe, discoverable</span>
+<span class="kw">struct</span> <span class="type">UserLoggedIn</span>: <span class="type">ToolkitEvent</span> { <span class="kw">let</span> <span class="prop">userId</span>: <span class="type">String</span> }
+
+<span class="cm">// Publish</span>
+<span class="type">Toolkit</span>.events.<span class="fn">publish</span>(<span class="type">UserLoggedIn</span>(userId: session.userId))
+
+<span class="cm">// Subscribe — structured concurrency</span>
+<span class="kw">for await</span> event <span class="kw">in</span> <span class="type">Toolkit</span>.events.<span class="fn">stream</span>(of: <span class="type">UserLoggedIn</span>.<span class="kw">self</span>) {
+    <span class="kw">await</span> <span class="fn">updateUI</span>(for: event.userId)
+}</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">31</div><div class="feature-title">Plugin dependency declarations <span class="badge badge-ext">extend</span></div></div>
+      </div>
+      <div class="feature-body">Plugins declare a <code>static var dependencies</code> array of other plugin types. The registry performs a topological sort at startup so initialisation order is always correct — no more manual ordering, no runtime crashes from missing dependencies.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="kw">struct</span> <span class="type">AnalyticsPlugin</span>: <span class="type">ToolkitPlugin</span> {
+    <span class="kw">static var</span> <span class="prop">dependencies</span>: [<span class="kw">any</span> <span class="type">ToolkitPlugin</span>.<span class="type">Type</span>] = [<span class="type">AuthPlugin</span>.<span class="kw">self</span>]
+    <span class="cm">// Guaranteed to initialise after AuthPlugin</span>
+}</pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITSYNC -->
+  <section class="module-section" id="toolkitsync">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(29,158,117,0.15); color:#5DCAA5; font-size:16px;">🔄</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitSync <span class="badge badge-new">new module</span></div>
+        <div class="module-desc">CoreData · SwiftData · Offline-first · Conflict resolution</div>
+      </div>
+    </div>
+
+    <div class="new-module-callout">
+      <div class="callout-icon">✦</div>
+      <div class="callout-text"><strong>New module proposal.</strong> ToolkitSync bridges local CoreData / SwiftData stores with a REST backend — handling dirty tracking, conflict resolution, and background sync. Depends on ToolkitNetworking + ToolkitAuth — no new third-party dependencies.</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">32</div><div class="feature-title">Delta sync engine <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">A <code>@SyncedModel</code> macro attaches to <code>NSManagedObject</code> or SwiftData <code>@Model</code> and tracks which fields are dirty since the last successful sync. Only changed records are serialised and transmitted per cycle — no full payload on every sync.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="prop">@SyncedModel</span>
+<span class="kw">class</span> <span class="type">Note</span>: <span class="type">NSManagedObject</span> {
+    <span class="prop">@NSManaged</span> <span class="kw">var</span> <span class="prop">title</span>: <span class="type">String</span>
+    <span class="prop">@NSManaged</span> <span class="kw">var</span> <span class="prop">content</span>: <span class="type">String</span>
+}
+
+<span class="type">Toolkit</span>.sync.<span class="fn">configure</span>(
+    store: persistentContainer,
+    remote: <span class="type">RESTSyncAdapter</span>(baseURL: apiURL),
+    conflictStrategy: .<span class="prop">lastWriteWins</span>
+)
+<span class="kw">try await</span> <span class="type">Toolkit</span>.sync.<span class="fn">syncNow</span>()</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">33</div><div class="feature-title">Pluggable conflict resolution <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Three built-in strategies — <code>.lastWriteWins</code>, <code>.serverWins</code>, <code>.clientWins</code> — plus a custom closure for field-level merge logic. Conflicts are broadcast as typed <code>EventBus</code> events so the UI can surface a resolution prompt to the user.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.sync.conflictStrategy = .<span class="fn">custom</span> { local, remote <span class="kw">in</span>
+    <span class="cm">// Return whichever version to keep</span>
+    local.updatedAt > remote.updatedAt ? local : remote
+}
+
+<span class="kw">for await</span> conflict <span class="kw">in</span> <span class="type">Toolkit</span>.events.<span class="fn">stream</span>(of: <span class="type">SyncConflictEvent</span>.<span class="kw">self</span>) {
+    <span class="fn">showResolutionUI</span>(for: conflict)
+}</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">34</div><div class="feature-title">Background sync via BGAppRefreshTask <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Register once at app startup. iOS schedules background sync using <code>BGAppRefreshTask</code>. Token refresh is delegated to the <code>ToolkitAuth</code> interceptor before each cycle — the sync engine never touches auth logic directly.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="cm">// Register once in AppDelegate / App.init</span>
+<span class="type">Toolkit</span>.sync.<span class="fn">enableBackgroundSync</span>(
+    taskIdentifier: <span class="str">"com.myapp.sync"</span>,
+    minimumInterval: <span class="prop">900</span>   <span class="cm">// 15 min</span>
+)
+
+<span class="cm">// Status observable</span>
+<span class="type">Toolkit</span>.sync.statusPublisher
+    .<span class="fn">sink</span> { status <span class="kw">in</span> <span class="cm">/* .idle | .syncing | .error(Error) */</span> }</pre>
+    </div>
+  </section>
+
+  <!-- TOOLKITANALYTICS -->
+  <section class="module-section" id="toolkitanalytics">
+    <div class="module-header">
+      <div class="module-icon" style="background:rgba(186,117,23,0.15); color:#EF9F27; font-size:16px;">📊</div>
+      <div class="module-meta">
+        <div class="module-name">ToolkitAnalytics <span class="badge badge-new">new module</span></div>
+        <div class="module-desc">Privacy-first · Consent gate · Adapter pattern · Funnels</div>
+      </div>
+    </div>
+
+    <div class="new-module-callout">
+      <div class="callout-icon">✦</div>
+      <div class="callout-text"><strong>New module proposal.</strong> ToolkitAnalytics is a consent-first event tracking engine with an adapter pattern for any backend — Mixpanel, PostHog, Amplitude, or your own. All network calls go through ToolkitNetworking, inheriting circuit breakers and offline queuing.</div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">35</div><div class="feature-title">Consent-gated event tracking <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">All tracking is paused until explicit user consent is recorded. Events fired before consent is granted are buffered locally and flushed retroactively (or discarded, configurable). Supports GDPR, CCPA, and App Tracking Transparency flows out of the box.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.analytics.<span class="fn">configure</span>(
+    adapters: [<span class="type">MixpanelAdapter</span>(token: <span class="str">"abc"</span>), <span class="type">PostHogAdapter</span>(key: <span class="str">"xyz"</span>)],
+    consent: .<span class="prop">requireExplicit</span>,
+    bufferIfNoConsent: <span class="kw">true</span>
+)
+
+<span class="type">Toolkit</span>.analytics.<span class="fn">setConsent</span>(granted: <span class="kw">true</span>)   <span class="cm">// flushes buffer</span>
+
+<span class="type">Toolkit</span>.analytics.<span class="fn">track</span>(.<span class="fn">custom</span>(<span class="str">"purchase_completed"</span>, properties: [
+    <span class="str">"amount"</span>: <span class="prop">49.99</span>, <span class="str">"currency"</span>: <span class="str">"INR"</span>, <span class="str">"items"</span>: <span class="prop">3</span>
+]))</pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">36</div><div class="feature-title">Funnel + retention analysis <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">Define multi-step named funnels in code as a sequence of event names. The SDK tracks entry, completion, and per-step drop-off automatically. No dashboard configuration needed — funnel definitions live in Swift alongside the features they describe.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.analytics.<span class="fn">defineFunnel</span>(<span class="str">"onboarding"</span>, steps: [
+    .<span class="fn">event</span>(<span class="str">"signup_started"</span>),
+    .<span class="fn">event</span>(<span class="str">"email_verified"</span>),
+    .<span class="fn">event</span>(<span class="str">"profile_completed"</span>),
+    .<span class="fn">event</span>(<span class="str">"first_purchase"</span>)
+])
+
+<span class="cm">// SDK auto-tracks progress whenever these events fire</span></pre>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div><div class="feature-num">37</div><div class="feature-title">Auto-instrumented performance events <span class="badge badge-new">new</span></div></div>
+      </div>
+      <div class="feature-body">View load time, network latency per endpoint, and cold app launch duration tracked automatically via <code>UIViewController</code> swizzling and <code>os.signpost</code> intervals. Zero call-site changes — enable once and all screens are instrumented.</div>
+      <div class="feature-divider"></div>
+      <div class="api-label">Usage</div>
+      <pre><span class="type">Toolkit</span>.analytics.<span class="fn">enableAutoInstrumentation</span>(
+    track: [.<span class="prop">screenLoad</span>, .<span class="prop">networkLatency</span>, .<span class="prop">appLaunch</span>],
+    sampleRate: <span class="prop">1.0</span>   <span class="cm">// 0.0 – 1.0</span>
+)
+<span class="cm">// Events like "screen_loaded" { screen: "HomeView", duration_ms: 84 }</span>
+<span class="cm">// appear in your analytics backend automatically</span></pre>
+    </div>
+  </section>
+
+</main>
+</div>
+</body>
+</html>
