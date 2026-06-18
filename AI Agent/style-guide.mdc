@@ -1,0 +1,49 @@
+# Style Guide
+
+## Naming Convention
+- **Swift Class/Struct/Protocol**: Use PascalCase (e.g., `ToolkitSyncManager`, `SyncAdapter`).
+- **Variables/Constants/Methods**: Use camelCase (e.g., `syncNow()`, `conflictStrategy`).
+- **Extensions**: Always prefix SDK utility extensions with the `.tk` namespace to avoid namespace pollution.
+  - *Correct*: `button.tk.applyTheme()`
+  - *Incorrect*: `button.applyTheme()`
+- **Macros**: Use PascalCase for macro declarations (e.g., `@SyncedModel`).
+
+## Folder Convention
+- Adhere strictly to the modular architecture layout:
+  ```
+  Sources/
+  ├── ToolkitCore/          # Logging, EventBus, DI
+  ├── ToolkitServices/      # Network, Database, Auth
+  ├── ToolkitUI/            # Components, ThemeManager
+  └── Features/
+      ├── ToolkitSync/      # Sync engine logic
+      └── ToolkitAnalytics/ # Telemetry engine
+  ```
+
+## API Convention
+- **Public Facades**: Expose module capabilities through a facade interface using `Toolkit.sync` or `Toolkit.analytics`.
+- **Method Signature**: Async methods must be marked with `async throws` if they perform network or disk operations.
+- **Strict Concurrency**: Enforce `@MainActor` for UI classes and `Sendable` compatibility for network models and analytics adapters.
+
+## Database Convention
+- **Schema Fields**: Always name core database properties using camelCase matching Swift code properties.
+- **Log Entities**: Sync log tables must be prefixed with `TK` (e.g., `TKSyncLog`).
+- **Data Models**: Use `@SyncedModel` macro exclusively on models intended for sync.
+
+## Error Handling Convention
+- **Strongly Typed Errors**: Declare modular domain errors conforming to `LocalizedError`.
+  - Example: `SyncError.networkUnavailable`, `AnalyticsError.consentDenied`.
+- **Graceful Recovery**: Avoid `try!` or forced unwrapping (`!`). Handle optional bindings cleanly.
+
+## Logging Convention
+- **Scrubbing PII**: Do not print authentication tokens, emails, names, or raw payloads to standard output.
+- **Logger Destinations**: Log exclusively using `ToolkitLogger` which maps to OSLogger or files.
+- **Log Levels**: Use appropriate levels: `.debug` for verbose debugging, `.info` for flow tracking, `.warning` for retriable failures, and `.error` for terminal errors.
+
+## Documentation Convention
+- **DocC Syntax**: Document all public protocols, interfaces, and methods using Swift DocC style comments.
+  ```swift
+  /// Synchronizes local data context with the remote server delta sync endpoint.
+  /// - Throws: `SyncError` if network or authorization fails.
+  public func syncNow() async throws
+  ```

@@ -1,0 +1,35 @@
+# Feature Architecture - ToolkitSync
+
+## System Architecture Impact
+`ToolkitSync` bridges local database contexts (`NSManagedObjectContext` or SwiftData `ModelContext`) with target REST servers.
+
+```mermaid
+sequenceDiagram
+    participant App as Host App
+    participant DB as CoreData / SwiftData
+    participant Sync as ToolkitSync Engine
+    participant Auth as ToolkitAuth Manager
+    participant Net as ToolkitNetworking
+    participant Bus as Core EventBus
+
+    App->>DB: Mutates Entity (@SyncedModel)
+    DB-->>Sync: Trigger change detection (mark dirty fields)
+    App->>Sync: syncNow()
+    Sync->>Auth: Request fresh access token
+    Auth-->>Sync: Returns Token
+    Sync->>Net: POST /sync/delta (Serialized delta payload)
+    alt Conflict Occurred
+        Net-->>Sync: Return 409 Conflict Response
+        Sync->>Sync: Run pluggable ConflictStrategy
+        Sync->>Bus: Publish SyncConflictEvent
+    else Sync Success
+        Net-->>Sync: Return 200 OK (Clean state metadata)
+        Sync->>DB: Clear dirty markings, update syncHash
+    end
+```
+
+## Key Components
+- **`SyncedModelMacro`**: A Swift compiler plugin that auto-generates tracking properties.
+- **`SyncEngine`**: Orchestrates serializing delta records and coordinates background sync loops.
+- **`SyncConflictResolver`**: Evaluates conflict strategies on mismatched records.
+- **`BackgroundSyncScheduler`**: Registers task identifier with iOS `BGSystem` frameworks.

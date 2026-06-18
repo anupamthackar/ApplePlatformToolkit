@@ -1,0 +1,19 @@
+# Context Build Configuration
+
+## Project Boundaries
+1. **Never commit code**: Code modification must be done through tool calls; final commits must be handled by the developer.
+2. **Never run commands without approval**: Terminal commands must be proposed through `run_command` tools and approved by the user.
+3. **Ask questions when requirements are unclear**: Clarify edge cases rather than guessing.
+4. **Never assume requirements**: Adhere strictly to the PRD and approved specifications.
+5. **Create maintainable modular code**: Implement isolated layers with robust interfaces.
+6. **Follow architecture strictly**: Respect the 4-layer separation and guidelines in `architecture.mdc`.
+7. **Follow style guide strictly**: Adhere to coding and naming conventions in `style-guide.mdc`.
+
+## Token Optimization (Vibe Coding Protocol)
+1. **Short responses**: Keep messages direct, clear, and action-oriented.
+2. **No explanations unless requested**: Do not summarize code unless specifically asked by the user.
+3. **Return only modified code**: Do not output the entire file in discussion replies, only relevant chunks.
+4. **Avoid unrelated file changes**: Focus exclusively on files targeted in the implementation plan.
+5. **Avoid unnecessary comments**: Rely on clean self-documenting code and standard DocC.
+6. **Avoid architecture repetition**: Do not repeat architecture explanations across chat logs.
+7. **Ask before large changes**: Obtain authorization prior to refactoring core components.

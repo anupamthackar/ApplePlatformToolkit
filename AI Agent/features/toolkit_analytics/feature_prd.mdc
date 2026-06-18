@@ -1,0 +1,35 @@
+# Feature PRD - ToolkitAnalytics Module
+
+## Goal
+Build a privacy-first telemetry engine with an adapter pattern for multiple backends, offline event buffering, custom funnels, and automated performance tracking with swizzling and `os.signpost`.
+
+## User Story
+As a data-conscious app developer, I want to track user behaviors and app performance in a compliant manner (respecting opt-in consent), define step-by-step conversions in code, and measure performance metrics automatically with zero site changes.
+
+## Requirements
+- **Consent-Gated Event Tracking (Feature 35)**: Pause and buffer tracking calls locally on disk until explicitly consented. Support CCPA, GDPR, and ATT guidelines.
+- **Funnel + Retention Analysis (Feature 36)**: Allow defining multi-step named conversion chains programmatically (e.g. `defineFunnel("onboarding", steps: [...])`) and automatically monitor completions.
+- **Auto-Instrumented Performance Events (Feature 37)**: Swizzle `UIViewController` to record loading durations and trace network request latency automatically using `os.signpost`.
+
+## API Impact
+Exposes `Toolkit.analytics` facade containing:
+- `configure(adapters:consent:bufferIfNoConsent:)`
+- `setConsent(granted:)`
+- `track(_ event: AnalyticsEvent)`
+- `defineFunnel(_ name: String, steps: [FunnelStep])`
+- `enableAutoInstrumentation(track:sampleRate:)`
+
+## Database Impact
+Maintains a secure local disk cache (using `Codable` and `FileManager`) for events buffered before consent registration.
+
+## Security Impact
+Enforces data compliance guidelines. Prevents capturing telemetry payloads if consent is denied. Does not transmit raw credentials or PII.
+
+## Edge Cases
+- User starts app offline, performs events (buffered), then declines consent. (Local buffer must be immediately purged).
+- Swizzling conflicts with custom lifecycle intercepts in host targets.
+
+## Acceptance Criteria
+- [ ] Explicit consent gates dispatching of events.
+- [ ] Funnel analysis measures drop-offs correctly.
+- [ ] Swizzling executes automatically without call-site logic and records view transitions accurately.

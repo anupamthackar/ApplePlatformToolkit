@@ -1,0 +1,31 @@
+# Security Requirements
+
+## Authentication
+- **Token Security**: Retrieve and refresh OAuth tokens using `ASWebAuthenticationSession` with PKCE configurations.
+- **Key Store**: Persist all session parameters inside Apple's Keychain using Secure Enclave backed tags.
+
+## Authorization
+- **Background Sync Bounds**: Background tasks must check auth state before running and abort if unauthorized.
+- **Biometric Enforcement**: Require FaceID/TouchID prompt validation for decrypting secure vaults.
+
+## Validation
+- **Input Filtering**: Sanitize properties in the delta sync engine to prevent malicious code injection.
+- **Payload Constraints**: Limit maximum payload sizes on network requests to prevent server exhaustion.
+
+## Encryption
+- **Local Database**: CoreData/SwiftData stores must run on hardware-encrypted partitions (standard iOS sandbox files default to encryption-until-first-user-authentication).
+- **Secure Vault**: Encrypt key-value vaults using AES-GCM (256-bit keys) with biometrically derived keys.
+
+## Rate Limiting
+- **Sync Throttling**: Restrict client sync queries to a minimum interval of 15 seconds to prevent backend DDoS.
+- **Retry Backoff**: Implement exponential backoff for retrying network operations on connection recovery.
+
+## Audit Logging
+- **Token Scrubbing**: All token values and PII details (e.g. usernames, emails) must be automatically redacted.
+- **Security Logs**: Emit event markers for access failures or validation exceptions.
+
+## Security Checklist
+- [ ] No hardcoded certificates or keys.
+- [ ] Zero logs contain credentials.
+- [ ] No plaintext storage of tokens or hashes.
+- [ ] Sync endpoints leverage SSL Certificate Pinning.

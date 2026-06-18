@@ -1,0 +1,122 @@
+# System Architecture
+
+## System Overview
+The architecture is designed to extend `MyToolkit` using a clean, 4-layer isolation approach:
+1. **ToolkitCore**: System foundation, Dependency Injection, Logging, and the typed EventBus.
+2. **ToolkitServices**: Security, Networking, Database (CoreData/SwiftData), and Authentication.
+3. **ToolkitUI & Features**: Layout elements, theme managers, and the concrete feature modules (including Sync and Analytics).
+4. **ToolkitPlugins**: Interceptable hooks and extension boundaries.
+
+`ToolkitSync` and `ToolkitAnalytics` are designed as sub-modules that sit in the Features/Services layers, depending strictly on `ToolkitNetworking` and `ToolkitAuth` for cross-cutting needs.
+
+## Component Diagram
+```mermaid
+graph TD
+    subgraph Host Application
+        App[App Target / SwiftUI Views]
+    end
+
+    subgraph ToolkitUI / Features
+        Demo[ToolkitDemo App]
+        Sync[ToolkitSync Engine]
+        Analytics[ToolkitAnalytics Router]
+    end
+
+    subgraph ToolkitServices
+        Net[ToolkitNetworkingManager]
+        Auth[ToolkitAuth Manager]
+        DB[Database Context CoreData/SwiftData]
+    end
+
+    subgraph ToolkitCore
+        DI[Dependency Container]
+        Log[ToolkitLogger]
+        Bus[Async EventBus]
+    end
+
+    App --> Sync
+    App --> Analytics
+    Sync --> Net
+    Sync --> Auth
+    Sync --> DB
+    Analytics --> Net
+    Net --> Auth
+    Sync --> Bus
+    Analytics --> Bus
+    DB --> DI
+```
+
+## Data Flow
+### Synchronization Flow
+1. User mutates `NSManagedObject` / SwiftData `Model` annotated with `@SyncedModel`.
+2. The macro captures modified fields and stores updates in a transaction log table.
+3. On calling `syncNow()`, `ToolkitSync` requests a sync ticket.
+4. Token refreshes are delegated to `ToolkitAuth`.
+5. Only delta modifications are serialized and sent via `ToolkitNetworking`.
+6. Server responses are parsed. If conflicts arise, the pluggable resolution strategy runs.
+7. Merge conflicts are broadcasted via `EventBus`.
+
+### Analytics Event Flow
+1. Feature tracks event using `Toolkit.analytics.track(...)`.
+2. Analytics checks the privacy consent level.
+3. If consent is not granted, event is written to a secure offline file queue.
+4. Once consent is granted, the engine flushes the queue via `ToolkitNetworking` to active analytics adapters.
+
+## Frontend Architecture
+UIKit swizzling intercepts view transitions in debug/profile builds to log view times. SwiftUI utilizes view modifiers (`.onAppear`) to track page render timings. All UI styling is strictly routed through `ThemeManager.shared`.
+
+## Backend Architecture
+The backend communication relies on standard JSON REST endpoints. All API structures conform to the `Codable` protocol.
+
+## Database Architecture
+- **Local Database**: CoreData `NSManagedObjectContext` or SwiftData `ModelContext`.
+- **Sync Log Entity**: Tracks `entityName`, `recordId`, `dirtyFields` (JSON key list), and `lastAttemptTime`.
+- **Analytics Queue**: Offline persistent binary buffer on the file system.
+
+## API Design
+### ToolkitSync Interface
+```swift
+public protocol SyncAdapter {
+    func upload(changes: [SyncChange]) async throws -> SyncResult
+}
+
+public enum ConflictStrategy {
+    case lastWriteWins
+    case serverWins
+    case clientWins
+    case custom((_ local: SyncedRecord, _ remote: SyncedRecord) -> SyncedRecord)
+}
+```
+
+### ToolkitAnalytics Interface
+```swift
+public protocol AnalyticsAdapter: Sendable {
+    func track(event: String, properties: [String: Any]?) async
+}
+
+public enum ConsentState: String, Codable {
+    case denied
+    case granted
+    case pending
+}
+```
+
+## Security Design
+- **Secure Storage**: Tokens reside in Apple's Keychain.
+- **Sensitive Data Redaction**: PII values are redacted using custom key-path attributes in the log formatter.
+
+## Caching Strategy
+`ToolkitSync` holds an in-memory cache of transaction hashes to prevent duplicative uploads of the same record values.
+
+## Queue Strategy
+- **Sync Queue**: Scheduled via iOS `BGAppRefreshTask`.
+- **Analytics Event Queue**: Disk-backed FIFO queue with max capacity of 5,000 events to prevent memory issues.
+
+## Deployment Strategy
+Integrated as a Swift Package Manager (SPM) dynamic library package.
+
+## Monitoring Strategy
+Consumes `os.signpost` for app cold launches, network latencies, and rendering times.
+
+## Disaster Recovery
+If local sync logs get corrupted, the sync engine clears dirty markers and triggers a full sync reconcile with the server metadata database.

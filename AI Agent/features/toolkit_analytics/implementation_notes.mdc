@@ -1,0 +1,56 @@
+# Implementation Notes - ToolkitAnalytics
+
+## Adapter Protocol Interface
+Adapters must be thread-safe (`Sendable`).
+
+```swift
+public protocol AnalyticsAdapter: Sendable {
+    var name: String { get }
+    func track(eventName: String, properties: [String: Any]) async
+}
+```
+
+## Funnel Definition Swift Structure
+Funnels are declared in code using custom types:
+```swift
+public enum FunnelStep: Sendable {
+    case event(String)
+}
+
+public struct FunnelDefinition: Sendable {
+    public let name: String
+    public let steps: [FunnelStep]
+}
+```
+
+## Performance Swizzling Code
+Standard Swift 5/6 UIViewController swizzling helper example:
+```swift
+import UIKit
+
+extension UIViewController {
+    private static let swizzleMethod: Void = {
+        let originalSelector = #selector(viewDidAppear(_:))
+        let swizzledSelector = #selector(tk_viewDidAppear(_:))
+        
+        guard let originalMethod = class_getInstanceMethod(UIViewController.self, originalSelector),
+              let swizzledMethod = class_getInstanceMethod(UIViewController.self, swizzledSelector) else { return }
+              
+        method_exchangeImplementations(originalMethod, swizzledMethod)
+    }()
+    
+    public static func enablePerformanceSwizzling() {
+        _ = swizzleMethod
+    }
+    
+    @objc private func tk_viewDidAppear(_ animated: Bool) {
+        let startTime = CACurrentMediaTime()
+        // Call original implementation
+        self.tk_viewDidAppear(animated)
+        let duration = (CACurrentMediaTime() - startTime) * 1000
+        
+        // Log view transition duration
+        ToolkitLogger.debug("Screen: \(type(of: self)) load duration: \(duration) ms")
+    }
+}
+```

@@ -1,0 +1,25 @@
+# Deployment
+
+## Environments
+- **Local Development**: Built and verified inside Xcode / Swift Package Manager targets (`PracticeProject`, `ToolkitDemo`).
+- **CI / Testing**: Run via GitHub Actions macOS runners using Xcode Command Line Tools.
+- **Production Release**: Packaged as an SPM binary or source dependency target.
+
+## Build Process
+- **Dynamic Framework Compilation**: Modules compile under release configuration using `swift build -c release`.
+- **Macro Compilation**: The `@SyncedModel` macro requires Swift compiler plugins. Ensure `swift-syntax` is correctly configured in `Package.swift`.
+
+## CI/CD
+- **Automated Workflow**:
+  - Code linting (SwiftLint check).
+  - Clean build check.
+  - Test suites execution (`swift test`).
+- **Strict Concurrency Check**: Xcode compile flags set to enable `-strict-concurrency=complete`.
+
+## Rollback Strategy
+- **Semantic Versioning**: Tag all SDK updates using standard SemVer.
+- **API deprecation policy**: Deprecate legacy interfaces via `@available(*, deprecated, message: "...")` tags instead of removing them immediately.
+
+## Release Strategy
+- **GitHub Releases**: Post tags with auto-generated changelogs.
+- **Demo verification**: Run manual app sanity tests inside `ToolkitDemo` before tag publishing.

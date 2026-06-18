@@ -1,0 +1,20 @@
+# Decision Log
+
+## Decision
+1. **Use of custom Swift compiler plugin macro `@SyncedModel` for dirty tracking.**
+   - *Date*: 2026-06-18
+   - *Reason*: Leverages compiler-time generation of property observation helpers, avoiding invasive runtime reflection or manual property setter overrides.
+   - *Alternatives*: Standard KVO (fails on SwiftData `@Model` classes), manual property observers (`didSet`), or runtime Swizzling.
+   - *Consequences*: Requires standard swift-syntax package compile targets, but delivers 100% type-safe property delta tracking.
+
+2. **Adapter pattern for ToolkitAnalytics.**
+   - *Date*: 2026-06-18
+   - *Reason*: Avoids locking host applications into a single analytics vendor. Simplifies updates or vendor migration.
+   - *Alternatives*: Concrete third-party SDK dependencies included within `MyToolkit` (e.g. including Mixpanel framework directly).
+   - *Consequences*: App developers write simple custom adapters, while the core SDK handles privacy, buffering, queuing, and formatting.
+
+3. **Disk buffering for analytics event queues.**
+   - *Date*: 2026-06-18
+   - *Reason*: Prevents event loss if host application crashes or gets terminated while offline.
+   - *Alternatives*: In-memory buffers only (causes data loss during crashes).
+   - *Consequences*: Requires secure file manager access, but ensures 100% telemetry accuracy.

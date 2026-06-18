@@ -1,0 +1,34 @@
+# Feature PRD - ToolkitSync Module
+
+## Goal
+Build a local-to-REST synchronization engine that automatically detects property-level database updates, processes background execution cycles, and handles merge conflicts gracefully.
+
+## User Story
+As an offline-first app user, I want my notes and tasks to sync silently in the background when network connectivity is available, resolving conflict issues automatically so that my data is consistent across devices without user friction.
+
+## Requirements
+- **Delta Sync Engine (Feature 32)**: Uses `@SyncedModel` macro attached to `NSManagedObject` or SwiftData `@Model` to track property mutations. Transmit only changed fields.
+- **Pluggable Conflict Resolution (Feature 33)**: Supports `.lastWriteWins`, `.serverWins`, `.clientWins`, and custom logic closure. Broadcast conflicts as typed events.
+- **Background Sync via BGAppRefreshTask (Feature 34)**: Automatically runs scheduled background tasks, executing token refreshes with `ToolkitAuth` before each cycle.
+
+## API Impact
+Exposes `Toolkit.sync` facade containing:
+- `configure(store:conflictStrategy:adapter:)`
+- `syncNow() async throws`
+- `enableBackgroundSync(taskIdentifier:minimumInterval:)`
+- `conflictStrategy` property setter
+
+## Database Impact
+Adds a transaction table or tracks entity-level sync metadata (`syncHash`, `lastSyncTime`, `dirtyProperties`).
+
+## Security Impact
+Background sync must authenticate with endpoints using Bearer tokens managed securely inside the Keychain by `ToolkitAuth`.
+
+## Edge Cases
+- Client conflicts with server changes at the exact same millisecond.
+- Background sync task is terminated mid-cycle by iOS operating system due to time limits.
+
+## Acceptance Criteria
+- [ ] `@SyncedModel` compiles and correctly appends dirty flags to data properties.
+- [ ] Built-in conflict strategies resolve conflicts accurately in tests.
+- [ ] BGAppRefreshTask schedules and executes without crashing or failing.

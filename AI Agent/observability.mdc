@@ -1,0 +1,23 @@
+# Observability
+
+## Logs
+- **Swift Logger**: Wrap Apple's standard `os.Logger` within the Core logger module.
+- **Privacy Gating**: Enforce strict logging classification (e.g. `OSLogPrivacy.private` or custom KeyPath redaction filters).
+
+## Metrics
+- **Sync Stats**: Capture rows synced, sync failure rates, and conflict occurrence counts.
+- **Analytics Volume**: Count events successfully transmitted, buffered, or dropped.
+
+## Tracing
+- **os.signpost Intervals**: Mark periods for:
+  - Cold launch durations.
+  - Network request latencies.
+  - UIViewController transition timings.
+- **View Performance Tracing**: Swizzled classes create signposts starting in `viewWillAppear` and ending in `viewDidAppear`.
+
+## Alerts
+- **System Diagnostics**: Raise warnings if local disk queue utilization reaches 90% capacity.
+- **Authentication Loop Alerts**: Alert if background refresh fails in three consecutive cycles.
+
+## Dashboards
+- Developers can configure console dashboards or link post-swizzled telemetry streams directly to target analytics backends (Amplitude, Mixpanel, etc.).

@@ -1,0 +1,79 @@
+# Product Requirements Document - MyToolkit Extensibility & Sync (v2.0)
+
+## Product Vision
+Empower Apple platform developers with a high-performance, robust, modular SDK (`MyToolkit`) that provides offline-first data sync (`ToolkitSync`) and privacy-first analytics (`ToolkitAnalytics`). These modules inherit all thread-safety, concurrency, and security protocols of the core SDK without introducing heavy or invasive third-party dependencies.
+
+## Problem Statement
+Developing offline-first apps with background synchronization and handling analytics in compliance with strict privacy regulations (GDPR/CCPA/ATT) is repetitive, error-prone, and often pollutes the codebase with fragmented dependencies. Developers need a unified, thread-safe, modular system that abstracts networking, data persistence, and telemetry seamlessly.
+
+## Solution Overview
+Introduce two major modules in `MyToolkit`:
+1. **ToolkitSync**: An engine that synchronizes CoreData or SwiftData contexts with REST endpoints, implementing delta syncing, customized conflict resolution strategies, and background scheduling.
+2. **ToolkitAnalytics**: A consent-gated tracking engine leveraging an adapter pattern to support any external analytics backend, featuring Swift-defined funnel/retention analysis and auto-instrumentation of app/network performance.
+
+## Target Audience
+iOS, macOS, iPadOS, watchOS, and visionOS developers building enterprise-grade applications using Swift 6.
+
+## User Personas
+- **App Developer (SDK Consumer)**: Wants simple APIs, macro annotations, and zero-configuration setups for common tasks.
+- **Security Officer**: Needs guarantees that no PII is leaked, and tracking is strictly opt-in.
+- **Product Manager**: Needs accurate drop-off and completion funnel metrics without manual dashboards.
+
+## User Stories
+- **US1**: As a developer, I want to annotate a data model with `@SyncedModel` so that only changed fields are tracked and transmitted, reducing bandwidth usage.
+- **US2**: As a developer, I want custom closures for conflict resolution so that field-level merges can be handled dynamically based on business logic.
+- **US3**: As a developer, I want analytics tracking to be paused automatically until explicit user consent is registered to remain compliant with privacy laws.
+- **US4**: As a developer, I want to define multi-step funnels directly in Swift code so that my funnel definitions change in lockstep with the features they track.
+
+## User Flow
+1. **Sync Flow**: CoreData/SwiftData modification -> `@SyncedModel` tracks dirty fields -> `BGAppRefreshTask` triggers -> Token refreshed via `ToolkitAuth` -> Changes serialized and sent via `ToolkitNetworking` -> Conflicts resolved via selected strategy -> EventBus broadcasts results.
+2. **Analytics Flow**: App fires tracking event -> Analytics verifies Consent State -> If granted: routes through `ToolkitNetworking` to configured adapters -> If pending: buffers locally on disk -> If denied: discards.
+
+## Functional Requirements
+### ToolkitSync
+- **FR1.1**: Detect dirty fields at property level since last successful sync.
+- **FR1.2**: Support `.lastWriteWins`, `.serverWins`, `.clientWins`, and custom closure resolution.
+- **FR1.3**: Schedule background sync tasks and handle pre-sync auth token refreshes automatically.
+- **FR1.4**: Broadcast conflict events onto the core `EventBus`.
+
+### ToolkitAnalytics
+- **FR2.1**: Enforce consent gating before tracking events. Buffer/flush based on configuration.
+- **FR2.2**: Allow Swift-based multi-step funnel definitions.
+- **FR2.3**: Swizzle `UIViewController` and hook `os.signpost` to automatically track load times and network latency.
+
+## Non-Functional Requirements
+- **NFR1**: Swift 6 Concurrency compliance (Actor isolation, Sendable enforcement).
+- **NFR2**: Zero mandatory third-party dependencies.
+- **NFR3**: Minimal UI impact (auto-instrumentation overhead must be < 5ms).
+- **NFR4**: Offline queue persistency with encrypted disk buffers.
+
+## API Requirements
+Must support clean declarative syntax through the `.tk` facade (e.g., `Toolkit.sync.syncNow()`, `Toolkit.analytics.track(...)`).
+
+## Database Requirements
+Integrates with SQLite-backed CoreData (`NSManagedObject`) and SwiftData (`@Model`).
+
+## Security Requirements
+- All buffered events and sync queues must be securely written to the device's sandbox.
+- PII and authorization tokens must be scrubbed before logging.
+- Keychain integration via `ToolkitAuth` for credential storage.
+
+## Edge Cases
+- **EC1**: Network connection dropped mid-sync cycle -> Queue retry logic via connectivity monitor.
+- **EC2**: Token expires during a background sync execution -> Auto-refresh token via interceptor before retrying.
+- **EC3**: Consent withdrawn mid-session -> Immediately purge the local buffer and stop active streams.
+
+## Risks
+Swizzling UIViewController could clash with other third-party frameworks. Safe, standard swizzling techniques must be implemented.
+
+## Assumptions
+The host application uses standard UIKit lifecycle or SwiftUI App structures.
+
+## Limitations
+Delta syncing requires server cooperation to process partial/field-level updates.
+
+## KPIs
+Refer to the KPI document for concrete, measurable success definitions.
+
+## Future Enhancements
+Support for WebSockets real-time sync streaming and auto-generated analytics dashboard schemas.

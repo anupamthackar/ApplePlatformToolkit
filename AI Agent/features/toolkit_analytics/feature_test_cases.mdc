@@ -1,0 +1,37 @@
+# Feature Test Cases - ToolkitAnalytics
+
+## TC1: Consent-Gated Buffer and Flush
+- **Type**: Unit Test
+- **Description**: Verify that events are held in buffer when consent is pending, and flushed when granted.
+- **Steps**:
+  1. Configure `ToolkitAnalytics` with `consent = .requireExplicit` and buffer enabled.
+  2. Track event `"app_launched"`.
+  3. Assert that the adapter does not receive any tracks, and that disk queue has 1 item.
+  4. Call `setConsent(granted: true)`.
+- **Expected Outcome**: Buffer flushes; adapter receives `"app_launched"`.
+
+## TC2: Local Buffer Purge on Denial
+- **Type**: Unit Test
+- **Description**: Verify that events are discarded and buffer is cleared if consent is denied.
+- **Steps**:
+  1. Configure pending consent buffer.
+  2. Track event `"onboarding_started"`.
+  3. Call `setConsent(granted: false)`.
+- **Expected Outcome**: Local queue buffer is cleared from disk. Adapter receives 0 items.
+
+## TC3: Funnel Completion Tracking
+- **Type**: Unit Test
+- **Description**: Verify that a defined funnel automatically maps user progress.
+- **Steps**:
+  1. Register a funnel `"checkout"` with steps: `["view_item", "add_to_cart", "purchase"]`.
+  2. Fire events in sequence.
+- **Expected Outcome**: Funnel reports completions. Drop-off percentages match sequence counts.
+
+## TC4: UIViewController Performance Swizzling
+- **Type**: Integration Test
+- **Description**: Verify swizzling logs loading durations accurately.
+- **Steps**:
+  1. Initialize target VC swizzling.
+  2. Push a mock view controller.
+  3. Capture the emitted signpost duration metric.
+- **Expected Outcome**: An auto-instrumented `"screen_loaded"` event is generated and contains accurate load times in milliseconds.

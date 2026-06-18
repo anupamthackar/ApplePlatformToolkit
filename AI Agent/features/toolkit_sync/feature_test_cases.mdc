@@ -1,0 +1,35 @@
+# Feature Test Cases - ToolkitSync
+
+## TC1: Delta Dirty tracking via @SyncedModel macro
+- **Type**: Unit Test
+- **Description**: Verify that updating properties of an entity updates the tracked dirty array.
+- **Steps**:
+  1. Instantiate a mock `Note` entity annotated with `@SyncedModel`.
+  2. Modify `note.title = "New Title"`.
+  3. Verify that `note.dirtyProperties` contains `"title"`.
+- **Expected Outcome**: `note.dirtyProperties == ["title"]`.
+
+## TC2: Pluggable Conflict Resolution (.lastWriteWins)
+- **Type**: Unit Test
+- **Description**: Ensure the last write wins strategy resolves conflict using newer timestamp.
+- **Steps**:
+  1. Create local record `A` with timestamp `10:00:00`.
+  2. Create remote record `B` with timestamp `10:05:00`.
+  3. Resolve conflict using `.lastWriteWins`.
+- **Expected Outcome**: Mapped output is record `B` (server wins because of newer timestamp).
+
+## TC3: Token Refresh delegation in background sync
+- **Type**: Integration Test
+- **Description**: Background scheduler calls `ToolkitAuth` to refresh credentials before sending payloads.
+- **Steps**:
+  1. Configure `ToolkitAuth` with expired credentials.
+  2. Invoke background sync trigger event.
+- **Expected Outcome**: Sync calls `ToolkitAuth.refreshAccessToken()`, completes token update, then starts data upload.
+
+## TC4: Conflict Event Broadcast
+- **Type**: Integration Test
+- **Description**: Conflict results in `SyncConflictEvent` being broadcasted.
+- **Steps**:
+  1. Trigger sync that raises a merge conflict.
+  2. Subscribe to `SyncConflictEvent` on `EventBus`.
+- **Expected Outcome**: The EventBus stream receives the correct conflict payload containing local and remote metadata.

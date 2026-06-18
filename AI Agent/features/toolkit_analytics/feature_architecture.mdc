@@ -1,0 +1,23 @@
+# Feature Architecture - ToolkitAnalytics
+
+## System Architecture Impact
+`ToolkitAnalytics` coordinates routing telemetry data through adapters, enforcing privacy restrictions.
+
+```mermaid
+graph TD
+    Trigger[SDK Consumer / Auto-Instrumentation] --> Router[ToolkitAnalytics Router]
+    Router --> ConsentCheck{Consent Granted?}
+    
+    ConsentCheck -- Yes --> ActiveAdapters[Active Adapters: Mixpanel, PostHog, Custom...]
+    ConsentCheck -- Pending --> Buffer[Disk Buffer Queue]
+    ConsentCheck -- No / Denied --> Discard[Discard Event / Purge Buffer]
+    
+    Buffer -- setConsent(granted: true) --> ActiveAdapters
+    ActiveAdapters --> Net[ToolkitNetworking Manager]
+```
+
+## Key Components
+- **`AnalyticsRouter`**: Coordinates event dispatching, consent enforcement, and queue flushes.
+- **`AnalyticsAdapter` Protocol**: Interface for wrapping external services (PostHog, Amplitude, etc.).
+- **`DiskBufferQueue`**: Handles serializing events to a secure sandbox file.
+- **`PerformanceSwizzler`**: Leverages Objective-C runtime class mutations to automatically intercept UI events.

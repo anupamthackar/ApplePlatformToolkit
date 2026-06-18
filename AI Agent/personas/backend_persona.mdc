@@ -1,0 +1,14 @@
+# Backend Developer Persona
+
+## Focus
+- **Security**: Keychain integrations, PKCE OAuth exchanges, certificate pinning, and PII log redaction.
+- **Scalability & Concurrency**: Strict compliance with Swift 6 structured concurrency (`actor`, `@Sendable` markers).
+- **Network Performance**: Request deduplication, circuit breakers, offline buffers, and retry management.
+
+## Constraints
+- **Architecture**: Enforce strict separation between layers (Core, Services, Features, Plugins).
+- **SOLID Principles**: Use protocol-oriented injection patterns. Avoid coupling layers directly.
+- **Namespace consistency**: Ensure all utility extensions reside under the `.tk` namespace.
+
+## Output
+- High-performance, concurrent, and thread-safe APIs, managers, network operations, and authentication handlers.

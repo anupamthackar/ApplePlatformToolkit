@@ -1,0 +1,56 @@
+# Implementation Notes - ToolkitSync
+
+## SyncedModel Macro Interface
+The macro must expand properties into observable storage, recording any modifications to a metadata storage dictionary.
+
+```swift
+@attached(member, names: arbitrary)
+@attached(peer, names: overloaded)
+public macro SyncedModel() = #externalMacro(module: "ToolkitMacros", type: "SyncedModelMacro")
+```
+
+Expanded structure sample:
+```swift
+// Expands to include:
+public var dirtyFields: Set<String> = []
+public var syncHash: String = ""
+```
+
+## Conflict Resolution Implementation
+Interface matching the design token structures:
+```swift
+public struct SyncConflict {
+    public let entityName: String
+    public let recordId: String
+    public let localRecord: [String: Any]
+    public let remoteRecord: [String: Any]
+}
+
+public protocol ConflictResolver {
+    func resolve(conflict: SyncConflict) -> [String: Any]
+}
+```
+
+## Background Task Registration
+Standard implementation logic using `BGTaskScheduler`:
+```swift
+import BackgroundTasks
+
+public final class BackgroundSyncScheduler {
+    public static func register(taskIdentifier: String, syncBlock: @escaping () async -> Void) {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: taskIdentifier, using: nil) { task in
+            guard let appRefreshTask = task as? BGAppRefreshTask else { return }
+            
+            let work = Task {
+                await syncBlock()
+                appRefreshTask.setTaskCompleted(success: true)
+            }
+            
+            appRefreshTask.expirationHandler = {
+                work.cancel()
+                appRefreshTask.setTaskCompleted(success: false)
+            }
+        }
+    }
+}
+```

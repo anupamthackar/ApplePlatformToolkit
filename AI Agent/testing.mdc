@@ -1,0 +1,31 @@
+# Testing Strategy
+
+## Unit Testing
+- **Macro Verification**: Assert that `@SyncedModel` adds tracking attributes (`syncHash`, `isDirty`, `dirtyFields`) to subclasses of `NSManagedObject` or SwiftData `@Model`.
+- **Conflict Resolution Engines**: Verify `.lastWriteWins`, `.serverWins`, and `.clientWins` strategies with mock data.
+- **Analytics Adapters**: Validate that adapters correctly formats payloads for respective backends.
+
+## Integration Testing
+- **Auth Interceptors & Sync**: Mock `ToolkitAuth` to expire tokens, and verify that `ToolkitSync` successfully triggers a token refresh before making sync network requests.
+- **Offline Event Queueing**: Validate that if `ToolkitNetworking` fails, events write to disk and flush sequentially when the network reconnects.
+
+## E2E Testing
+- **End-to-End Sync Loop**: Initialize local CoreData stack -> modify records -> execute background task -> check REST mock backend state -> verify records are reconciled.
+- **Analytics Consent Lifecycle**: Simulate consent toggle: Pending -> Granted -> Denied, asserting buffer behavior at each stage.
+
+## Security Testing
+- **PII Leak Verification**: Run tests verifying that `ToolkitLogger` scrubs attributes marked via KeyPaths.
+- **Keychain Isolation**: Validate keychain access constraints (e.g. data accessible only when device is unlocked).
+
+## Performance Testing
+- **Swizzling overhead**: Measure runtime impact of `UIViewController` swizzling. Fail if UI render lag exceeds 5ms.
+- **Memory Profiling**: Audit memory allocations during rapid tracking or large delta syncing loops to verify zero leaks.
+
+## Edge Cases
+- **Simultaneous Syncs**: Ensure concurrent attempts to invoke `syncNow()` are serialized.
+- **Conflict with Custom Closures**: Validate that custom closures returning `nil` handle validation failure safely.
+
+## Acceptance Validation
+- Complete execution of test scripts.
+- No Swift strict concurrency warnings.
+- Verification on test iOS and macOS devices via `ToolkitDemo`.
